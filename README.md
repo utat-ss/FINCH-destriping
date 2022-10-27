@@ -54,14 +54,7 @@ This section will take you through the procedure to take your development enviro
     From a terminal within the cloned repository, run poetry's install command:
     ```
     poetry install
-    ```
-
-    Then install the project's pre-commit hooks using:
-    ```
-    pre-commit install --install-hooks
-    ```
-    
-    Pre-commit's cache will be stored at `~/.cache/pre-commit` (this folder can grow very large).
+    ``'
 
 1. Configure IDE interpreter
 
@@ -77,6 +70,13 @@ This section will take you through the procedure to take your development enviro
     Install the recomended extensions by opening the command pallet using `CMD + shift + P`.
 
     Type `Show Reccomended Extensions` and install the extensions listed.
+
+1. Install pre-commit hooks
+    ```
+    pre-commit install --install-hooks
+    ```
+    
+    Pre-commit's cache will be stored at `~/.cache/pre-commit` (this folder can grow very large).
 
 
 You're now ready to start contributing!
