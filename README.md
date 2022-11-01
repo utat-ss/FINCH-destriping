@@ -1,23 +1,37 @@
+#<img src="img/utat-logo.png" height="54">
+
 # Destriping - Data Processing
- The destriping project is a steps under level 1B radiometric correction of the FINCH Data Processing Pipeline. It's goal is to remove stripe streak from our pushbroom imager data
+ The destriping project is a step under level 1B radiometric correction of the FINCH Data Processing Pipeline. It's goal is to remove stripe streak from our pushbroom imager data
+
  This repo contains all the code we created and adapted from different sources. 
 
  ## Folders & Files (high level):
 .gitignore - tells git which files to ignore when committing the project
+
 .pre-commit-config - tells git what scripts to run when commiting (formatters to ensure good coding convention)
+
 .vscode - settings for vscode
+
 pyproject.toml - configurations of packages that run for this repo (can edit some stuff like Black line length, etc...)
+
 README.md - what you are currently reading right now
 
+
+
 docs - 
+
 notebooks - jupyter notebooks, use to write interactive function to easily see outputs, and show others outputs
+
 tests - unit test to test that each file/function in our code sitll works as intended
+
 datasets - contains all the file for each dataset we use to test/analyze our code
+
 destriping - folder where we keep all our code 
+    
     augmentation_pipeline - code to add noise to original (clean) data
+    
     SURE_CNN - first algorithm destriping tried to implement
 
-<img src="img/utat-logo.png" height="54">
 
 # Contribution
 Instructions for contributing to this project are shown here.
