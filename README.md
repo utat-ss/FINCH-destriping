@@ -27,10 +27,8 @@ tests - unit test to test that each file/function in our code sitll works as int
 datasets - contains all the file for each dataset we use to test/analyze our code
 
 destriping - folder where we keep all our code 
-    
-    augmentation_pipeline - code to add noise to original (clean) data
-    
-    SURE_CNN - first algorithm destriping tried to implement
+1. augmentation_pipeline - code to add noise to original (clean) data
+1. SURE_CNN - first algorithm destriping tried to implement
 
 
 # Contribution
