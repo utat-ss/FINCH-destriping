@@ -1,35 +1,25 @@
-#<img src="img/utat-logo.png" height="54">
+<img src="img/utat-logo.png" height="54">
 
-# Destriping - Data Processing
+# Destriping - A Data Processing Project
  The destriping project is a step under level 1B radiometric correction of the FINCH Data Processing Pipeline. It's goal is to remove stripe streak from our pushbroom imager data
 
  This repo contains all the code we created and adapted from different sources. 
 
  ## Folders & Files (high level):
-.gitignore - tells git which files to ignore when committing the project
+1. **.gitignore** - tells git which files to ignore when committing the project
+1. **.pre-commit-config** - tells git what scripts to run when commiting (formatters to ensure good coding convention)
+1. **.vscode** - settings for vscode
+1. **pyproject.toml** - configurations of packages that run for this repo (can edit some stuff like Black line length, etc...)
+1. **README.md** - what you are currently reading right now
 
-.pre-commit-config - tells git what scripts to run when commiting (formatters to ensure good coding convention)
+1. **docs** - 
+1. **notebooks** - jupyter notebooks, use to write interactive function to easily see outputs, and show others outputs
+1. **tests** - unit test to test that each file/function in our code sitll works as intended
+1. **datasets** - contains all the file for each dataset we use to test/analyze our code
+1. **destriping** - folder where we keep all our code 
 
-.vscode - settings for vscode
-
-pyproject.toml - configurations of packages that run for this repo (can edit some stuff like Black line length, etc...)
-
-README.md - what you are currently reading right now
-
-
-
-docs - 
-
-notebooks - jupyter notebooks, use to write interactive function to easily see outputs, and show others outputs
-
-tests - unit test to test that each file/function in our code sitll works as intended
-
-datasets - contains all the file for each dataset we use to test/analyze our code
-
-destriping - folder where we keep all our code 
-1. augmentation_pipeline - code to add noise to original (clean) data
-1. SURE_CNN - first algorithm destriping tried to implement
-
+    **_augmentation_pipeline_** - code to add noise to original (clean) data
+    **_SURE_CNN_** - first algorithm destriping tried to implement
 
 # Contribution
 Instructions for contributing to this project are shown here.
