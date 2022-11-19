@@ -1,0 +1,157 @@
+The actual image is corrupted by noise, ie, Y = X + N + S, where 
+X = actual image
+N = white Gaussian noise
+S = sparse noise
+Y = resulting image
+
+Equation 2 is the loss function equation where the -1/2*sigma^2 term is the (predicted - actual) value 
+and the next lambda term is the regularization parameter.
+
+The linear spectral mixing model (LSMM) and its condition (eq. 3 and 4) have been widely used for 
+spectral unmixing, image restoration, and fusion.
+
+The denoising problem is derived from eq. 1, 5, and 6 and is formulated as eq. 7
+
+Sparse noise S is updated in eq. 8, and 9
+
+When S is fixed, eq. 7 turns into a constrained non-negative matrix factorization problem. To solve 
+this problem, we utilize the proximal alternating linearized minimization (PALM) algorithm. Here, in 
+the first step, spectral matrix E is updated using eq. 10 and 11. In the second step, E is fixed and 
+abundance matrix A is updated using eq. 12 and 13. Also, by iteratively running eq. 12 and 13, the 
+target image can be obtained.
+
+The denoising proximal operator of eq.13 is equivalent to eq. 14. This paper attempts to obtain the 
+solution of eq. 14 using a deep denoising CNN. This CNN aims to satisfy 2 requirements:
+1. efficiently remove gaussian noise from V (see eq. 14)
+2. be adaptive to the variance sigma^2/d (of gaussian noise) decided by E
+
+To meet the 1st requirement, this CNN is based on a dilated deep ResNet. See Fig. 1 for diagram of 
+this network. There are 3 types of blocks:
+
+1. d-Conv - denote dilated convolution with dilation factors d. Dilation filters can enlarge network's
+receptive field so that more context information can be used to enhance denoising performance without
+increasing the network's computational complexity. There are 7 d-Conv blocks:
+	- first block -> 64 filters with size 3x3x1 - used to extract features
+	- 2nd to 6th block -> 64 filters with size 3x3x64
+	- last (7th) block -> 1 filter with size 3x3x64 - used to obtain estimated Gaussian noise,
+	which will be removed from the noisy image Y.
+The dilation factors of all above blocks are set to 1, 2, 4, 3, 4, 2 and 1 respectively, while the 
+strides of all convolutions are set to 1 as the same. Padding is 0 for all convolutions.
+Extra info:  Since a dilated filter of spatial size 3x3 and dilation factor d can be regarded as a
+(2d + 1) × (2d + 1) sparse filter, the receptive field size of the designed network is 35x35.
+
+2. BNorm + ReLU - BNorm denotes Batch Normalization which is used for solving the internal covariate 
+shift (change in network activations due to change in network parameters during training) problem by 
+normalizing layer inputs. Helps in increasing learning speed and improving denoising stability. BNorm
+is a little computationally expensive but can be removed entirely during testing and deployment time.
+ReLU helps with vanishing gradient problem and is better than sigmoid activation function for 
+denoising.
+
+3. ReLU - the first relu block is between 1st and 2nd dilated conv blocks. It plays the same role as 
+BNorm + ReLU. The second relu block is introduced to guarantee the non-negativity of the denoising 
+abundance matrix A.
+
+Also, residual learning can bring in faster convergence and higher stability for the training process.
+
+The second requirement asks for a loss function so that the CNN can remove different gaussian
+noises effectively. Eq. 15 presents a loss function but because it doesn't take the noise variance 
+sigma^2/d into consideration, so eq. 16 is better choice as it takes the noise variance into
+consideration. Moreover, the noisy samples are pre-processed before being input the the CNN. This 
+pre-processing sets the noise variances of different input samples to 1 so that the noise variance can
+be utilized. On the basis of eq. 16, the final denoising solution is 
+x_i = sigma_r * R (y_i / sigma_r), where R is the designed CNN.
+
+Designing a training dataset with ground-truth abundance matrices is not known for sure because abundance 
+matrices A are unknown and depend on implicit regularization term T(A). There are 2 methods for 
+designing ground-truth dataset:
+1. Transfer Learning
+	 - we attempt to train the network using samples generated from natural gray images.
+2. Real-Life HSI-Based
+	- requires real-life high quality HSI dataset
+	- cannot be used directly for training
+	- check eqn. 17
+	- eqn. 13 can be used for removing gaussian noise
+	- this CNN is designed to get solution of eqn. 13, so eqn. 17 can be used for constructing
+ground-truth dataset
+	- check eqn. 18 for how to formulate ground-truth dataset
+
+
+Generating training dataset based on ground-truth dataset and loss function in eqn.16
+- notation:
+	- g_i = ground_truth dataset sample
+	- sigma^2_i = 
+	- n_i = white gaussian noise
+	- variance = 1
+- label dataset = g_i / sigma_i
+- input dataset = g_i / (sigma_i + n_i)
+
+But, since the elements of the abundance matrix A are unknown, so the dataset we generate above might
+not have the same range of A. By setting the variance of the removed gaussian noise to sigma^2 / d, we
+remove some useful information. Eqn. 19 solves this problem by introducing a positive factor eta.
+The new noise variance is (eta^2 * sigma^2) / d. This eta can correct the range of the data, so that
+the range of the test data is more close to the range of the training data.
+
+Algorithm 1 summarizes the approach of the HSI-based method to denoise the data.
+
+Testing dataset:
+	- Harvard = quality assessment
+	- Indian Pines = real-data experiments
+
+
+Implementation details:
+	- transfer learning = we use 400x180×180 gray images
+	- real-life HSI-based = we use the CAVE dataset which consists of 32 HSIs of size 512×512×31,
+ranging from 400nm to 700nm at 10nm intervals in wavelength.
+	- we use rotation and flip based data augmentation to generate 2 training datasets, 
+each of which consists of 256×2000 image patch pairs with size 40×40.
+	- we use the Adam optimizer to train the model with
+		- we use a mini-batch size of 256,
+		- a weight decay of 10^−4
+		- 60 epochs
+		- Adam parameters: β1 = 0.9, β2 = 0.999 and epsilon = 10^−8
+		- the learning rate is initially set to 10^−3, and is reduced to 10^−4 after 30 epochs.
+
+
+Initialization:
+- denoise one image band by band using CNN. On the basis of this initial denoised image, we use 
+SISAL method to obtain initial values of endmember matrix E and abundance matrix A.
+- CNN uses spatial correlation, while SISAL uses spectral correlation for denoising the image
+- see table 1 for initialization evaluation results
+- the method of first using the CNN to denoise the image, and then using SISAL to further denoise the
+image is very good.
+
+
+Selection of Model Parameters:
+- Notation:
+	- r = the number of endmembers, 
+	- η = the correction factor, 
+	- T_iter = the number of iterations, 
+	- λ = the regularization parameter
+- several experiments were designed to conclude that:
+	- r = 5, η = 0.8, T_iter = 150, 
+	- λ = 10^1.2 ≈ 15.85 for mixed Gaussian-impulse noise with σ = 0.1, P = 0.05, and 
+	- λ = 10^0.84 ≈ 6.92 for mixed Gaussian-impulse noise with σ = 0.15, P = 0.1
+
+
+Convergence Analysis: average PSNR value shows the best performance (check table 1)
+
+The results of the LRTDTV, LLRGTV and LRTV method features less noise and are more smooth than that
+of the proposed method in most case, since the total variation regularization is adopted to smooth 
+the image texture. However, the proposed method can recover the image with more clearly and natural 
+texture from the noisy image, since the CNN is adopted and is trained with images of different
+texture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
