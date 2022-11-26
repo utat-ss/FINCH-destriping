@@ -29,6 +29,35 @@ import matplotlib.pyplot as plt
 from tensorflow.keras import layers
 
 IMG_SIZE = 224
+AUTO = tf.data.AUTOTUNE
+
+def preprocess_image(image, label):
+    image = tf.image.resize(image, (IMG_SIZE, IMG_SIZE))
+    image = tf.image.convert_image_dtype(image, tf.float32) / 255.0
+    return image, label
+
+def x_train(x):
+    """
+    A placeholder function to get the data.
+    """
+    return x
+
+def y_train(y):
+    """
+    A placeholder function to get the data.
+    """
+    return y
+
+train_ds_one = (
+    tf.data.Dataset.from_tensor_slices((x_train(x), y_train(y)))
+    .shuffle(1024)
+    .map(preprocess_image, num_parallel_calls=AUTO)
+)
+train_ds_two = (
+    tf.data.Dataset.from_tensor_slices((x_train(x), y_train(y)))
+    .shuffle(1024)
+    .map(preprocess_image, num_parallel_calls=AUTO)
+)
 
 def sample_beta_distribution(size, concentration_0=0.2, concentration_1=0.2):
     gamma_1_sample = tf.random.gamma(shape=[size], alpha=concentration_1)
