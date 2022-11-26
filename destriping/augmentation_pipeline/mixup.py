@@ -31,10 +31,12 @@ from tensorflow.keras import layers
 IMG_SIZE = 224
 AUTO = tf.data.AUTOTUNE
 
+
 def preprocess_image(image, label):
     image = tf.image.resize(image, (IMG_SIZE, IMG_SIZE))
     image = tf.image.convert_image_dtype(image, tf.float32) / 255.0
     return image, label
+
 
 def x_train(x):
     """
@@ -42,11 +44,13 @@ def x_train(x):
     """
     return x
 
+
 def y_train(y):
     """
     A placeholder function to get the data.
     """
     return y
+
 
 train_ds_one = (
     tf.data.Dataset.from_tensor_slices((x_train(x), y_train(y)))
@@ -59,10 +63,12 @@ train_ds_two = (
     .map(preprocess_image, num_parallel_calls=AUTO)
 )
 
+
 def sample_beta_distribution(size, concentration_0=0.2, concentration_1=0.2):
     gamma_1_sample = tf.random.gamma(shape=[size], alpha=concentration_1)
     gamma_2_sample = tf.random.gamma(shape=[size], alpha=concentration_0)
     return gamma_1_sample / (gamma_1_sample + gamma_2_sample)
+
 
 @tf.function
 def get_box(lambda_value):
@@ -91,6 +97,7 @@ def get_box(lambda_value):
         target_w += 1
 
     return boundaryx1, boundaryy1, target_h, target_w
+
 
 @tf.function
 def cutmix(train_ds_one, train_ds_two):
