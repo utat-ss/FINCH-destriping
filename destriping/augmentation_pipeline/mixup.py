@@ -92,3 +92,45 @@ def get_box(lambda_value):
 
     return boundaryx1, boundaryy1, target_h, target_w
 
+@tf.function
+def cutmix(train_ds_one, train_ds_two):
+    (image1, label1), (image2, label2) = train_ds_one, train_ds_two
+
+    alpha = [0.25]
+    beta = [0.25]
+
+    # Get a sample from the Beta distribution
+    lambda_value = sample_beta_distribution(1, alpha, beta)
+    lambda_value = lambda_value[0][0]
+    boundaryx1, boundaryy1, target_h, target_w = get_box(lambda_value)
+
+    # Get a patch from the second image (`image2`)
+    crop2 = tf.image.crop_to_bounding_box(
+        image2, boundaryy1, boundaryx1, target_h, target_w
+    )
+    # Pad the `image2` patch (`crop2`) with the same offset
+    image2 = tf.image.pad_to_bounding_box(
+        crop2, boundaryy1, boundaryx1, IMG_SIZE, IMG_SIZE
+    )
+    # Get a patch from the first image (`image1`)
+    crop1 = tf.image.crop_to_bounding_box(
+        image1, boundaryy1, boundaryx1, target_h, target_w
+    )
+    # Pad the `image1` patch (`crop1`) with the same offset
+    img1 = tf.image.pad_to_bounding_box(
+        crop1, boundaryy1, boundaryx1, IMG_SIZE, IMG_SIZE
+    )
+
+    # Modify the first image by subtracting the patch from `image1`
+    # (before applying the `image2` patch)
+    image1 = image1 - img1
+    # Add the modified `image1` and `image2`  together to get the CutMix image
+    image = image1 + image2
+
+    # Adjust Lambda in accordance to the pixel ration
+    lambda_value = 1 - (target_w * target_h) / (IMG_SIZE * IMG_SIZE)
+    lambda_value = tf.cast(lambda_value, tf.float32)
+
+    # Combine the labels of both images
+    label = lambda_value * label1 + (1 - lambda_value) * label2
+    return image, label
