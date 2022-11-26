@@ -27,3 +27,39 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.keras import layers
+
+IMG_SIZE = 224
+
+def sample_beta_distribution(size, concentration_0=0.2, concentration_1=0.2):
+    gamma_1_sample = tf.random.gamma(shape=[size], alpha=concentration_1)
+    gamma_2_sample = tf.random.gamma(shape=[size], alpha=concentration_0)
+    return gamma_1_sample / (gamma_1_sample + gamma_2_sample)
+
+@tf.function
+def get_box(lambda_value):
+    cut_rat = tf.math.sqrt(1.0 - lambda_value)
+
+    cut_w = IMG_SIZE * cut_rat  # rw
+    cut_w = tf.cast(cut_w, tf.int32)
+
+    cut_h = IMG_SIZE * cut_rat  # rh
+    cut_h = tf.cast(cut_h, tf.int32)
+
+    cut_x = tf.random.uniform((1,), minval=0, maxval=IMG_SIZE, dtype=tf.int32)  # rx
+    cut_y = tf.random.uniform((1,), minval=0, maxval=IMG_SIZE, dtype=tf.int32)  # ry
+
+    boundaryx1 = tf.clip_by_value(cut_x[0] - cut_w // 2, 0, IMG_SIZE)
+    boundaryy1 = tf.clip_by_value(cut_y[0] - cut_h // 2, 0, IMG_SIZE)
+    bbx2 = tf.clip_by_value(cut_x[0] + cut_w // 2, 0, IMG_SIZE)
+    bby2 = tf.clip_by_value(cut_y[0] + cut_h // 2, 0, IMG_SIZE)
+
+    target_h = bby2 - boundaryy1
+    if target_h == 0:
+        target_h += 1
+
+    target_w = bbx2 - boundaryx1
+    if target_w == 0:
+        target_w += 1
+
+    return boundaryx1, boundaryy1, target_h, target_w
+
