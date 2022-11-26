@@ -1,6 +1,6 @@
 This is the code for the "Hyperspectral Image Denoising via Matrix Factorization and Deep Prior Regularization" paper.
 
-I have built the model. In order to match the dimension of the output of this model, I added a Conv3D layer.
+The model is now built. In order to match the dimension of the output of this model, I added a Conv3D layer.
 
 For now I'm using regular Adam optimizer, instead of the experimental one with modifications as specified in the paper, because .h5 file format doesn't store this optimizer. I'll look into it and make the neccesary changes.
 
