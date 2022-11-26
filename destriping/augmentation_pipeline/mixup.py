@@ -3,11 +3,9 @@ Author: [@Rishit-Dagli](https://github.com/Rishit-dagli)
 """
 """
 _mixup_ is a *domain-agnostic* data augmentation technique proposed in [mixup: Beyond Empirical Risk Minimization](https://arxiv.org/abs/1710.09412)
-by Zhang et al. It's implemented with the following formulas:
+by Zhang et al.
 
-![](https://i.ibb.co/DRyHYww/image.png)
-
-(Note that the lambda values are values with the [0, 1] range and are sampled from the
+(The lambda hyperparameter values are values with the [0, 1] range and are sampled from the
 [Beta distribution](https://en.wikipedia.org/wiki/Beta_distribution).)
 
 The technique is quite systematically named. We are literally mixing up the features and
