@@ -6,6 +6,7 @@ _mixup_ is a *domain-agnostic* data augmentation technique proposed in [mixup: B
 by Zhang et al. It's implemented with the following formulas:
 
 ![](https://i.ibb.co/DRyHYww/image.png)
+
 (Note that the lambda values are values with the [0, 1] range and are sampled from the
 [Beta distribution](https://en.wikipedia.org/wiki/Beta_distribution).)
 
@@ -20,7 +21,6 @@ mixup is specifically useful when we are not sure about selecting a set of augme
 transforms for a given dataset, medical imaging datasets, for example. mixup can be
 extended to a variety of data modalities such as computer vision, naturallanguage
 processing, speech, and so on.
-
 """
 
 import numpy as np
