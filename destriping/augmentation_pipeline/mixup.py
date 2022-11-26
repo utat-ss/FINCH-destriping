@@ -1,5 +1,5 @@
 """
-Author: [@Rishit-Dagli](https://github.com/Rishit-dagli)
+Author: [@Rishit-dagli](https://github.com/Rishit-dagli)
 """
 """
 _mixup_ is a *domain-agnostic* data augmentation technique proposed in [mixup: Beyond Empirical Risk Minimization](https://arxiv.org/abs/1710.09412)
