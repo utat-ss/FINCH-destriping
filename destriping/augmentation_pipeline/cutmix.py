@@ -12,6 +12,7 @@ CutMix was proposed in
 (Yun et al., 2019)
 """
 
+# external
 import tensorflow as tf
 from tensorflow import keras
 
@@ -19,10 +20,12 @@ AUTO = tf.data.AUTOTUNE
 BATCH_SIZE = 32
 IMG_SIZE = 32
 
+
 def preprocess_image(image, label):
     image = tf.image.resize(image, (IMG_SIZE, IMG_SIZE))
     image = tf.image.convert_image_dtype(image, tf.float32) / 255.0
     return image, label
+
 
 def sample_beta_distribution(size, concentration_0=0.2, concentration_1=0.2):
     gamma_1_sample = tf.random.gamma(shape=[size], alpha=concentration_1)
