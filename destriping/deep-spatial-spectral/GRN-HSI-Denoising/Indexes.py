@@ -8,7 +8,7 @@
 # external
 import numpy as np
 from numpy.linalg import norm
-from skimage.measure import compare_psnr, compare_ssim
+from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
 
 def mpsnr(x_true, x_pred):
@@ -22,7 +22,7 @@ def mpsnr(x_true, x_pred):
     """
     n_bands = x_true.shape[2]
     p = [
-        compare_psnr(
+        peak_signal_noise_ratio(
             x_true[:, :, k], x_pred[:, :, k], dynamic_range=np.max(x_true[:, :, k])
         )
         for k in range(n_bands)
@@ -74,5 +74,5 @@ def mssim(x_true, x_pred):
     :param x_pred: 高光谱图像：格式：(H, W, C)
     :return: 计算原始高光谱数据与重构高光谱数据的结构相似度
     """
-    SSIM = compare_ssim(X=x_true, Y=x_pred, multichannel=True)
+    SSIM = structural_similarity(X=x_true, Y=x_pred, multichannel=True)
     return SSIM
