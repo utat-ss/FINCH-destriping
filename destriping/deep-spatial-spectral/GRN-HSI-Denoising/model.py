@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+
 
 
 # external
@@ -224,7 +224,7 @@ def Inference(images, channels=64):
 
 
 if __name__ == "__main__":
-    tf.reset_default_graph()
+    ##tf.reset_default_graph()
     input_x = tf.placeholder(tf.float32, [10, 101, 101, 1])
     #    out = spatialBlock(input_x)
     out = Inference(input_x)
