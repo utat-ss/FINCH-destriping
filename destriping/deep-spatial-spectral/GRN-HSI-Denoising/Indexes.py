@@ -1,9 +1,8 @@
 #!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 12 21:48:37 2020
+"""Created on Fri Jun 12 21:48:37 2020.
 
 @author: cxy
+
 """
 
 # external

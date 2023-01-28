@@ -1,5 +1,4 @@
 #!/usr/bin/env python2
-# -*- coding: utf-8 -*-
 
 
 # external
@@ -52,7 +51,6 @@ def spatialBlock(input_tensor):
 
 
 def GloRe(X):
-
     imput_chancel = X.get_shape().as_list()[-1]
     inputs_shape = tf.shape(X)
 
@@ -76,9 +74,7 @@ def GloRe(X):
     v = tf.expand_dims(v, axis=1)  # [B, 1, C, N]
 
     def GCN(Vnode, nodeN, mid_chancel):
-
         net = tf.layers.conv2d(Vnode, N, 1, padding="valid")  # [B, 1, C, N]
-
         net = Vnode + net  # (I-Ag)V
         net = tf.nn.relu(net)
 
@@ -158,7 +154,6 @@ def blockD(_input):
 
 
 def Inference(images, channels=64):
-
     inchannels = images.get_shape().as_list()[-1]
 
     with tf.variable_scope("UNet", reuse=tf.AUTO_REUSE):

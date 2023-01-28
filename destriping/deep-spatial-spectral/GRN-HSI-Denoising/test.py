@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Apr 18 21:15:29 2020
+"""Created on Sat Apr 18 21:15:29 2020.
 
 @author: Xiangyong Cao
+
 """
 
 # stdlib
@@ -19,6 +18,7 @@ import scipy.io
 import skimage
 import tensorflow as tf
 from Indexes import ergas, sam
+
 from skimage.measure import compare_psnr, compare_ssim
 
 # import cv2

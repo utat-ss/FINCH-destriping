@@ -27,7 +27,6 @@ def add_multiplicative_stripes(data_cube, stripe_per_image=0):
     striped_data: data cube with stripes added to it
 
     """
-
     cube_dim = data_cube.shape  # cube dimesion
     striped_data = copy.deepcopy(
         data_cube
