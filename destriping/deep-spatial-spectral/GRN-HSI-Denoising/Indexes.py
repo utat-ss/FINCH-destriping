@@ -3,6 +3,9 @@
 
 @author: cxy
 
+This file contains functions which help to compute similarity between the original hyperspectral data and the reconstructed hyperspectral data 
+and assist with determining the accuracy of predictions made by the model.  
+
 """
 
 # external
@@ -13,15 +16,17 @@ from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
 def mpsnr(x_true, x_pred):
     """
-    :param x_true: 高光谱图像：格式：(H, W, C)
-    :param x_pred: 高光谱图像：格式：(H, W, C)
-    :return: 计算原始高光谱数据与重构高光谱数据的均方误差
+    :param x_true: Hyperspectral Imagery: Format：(H, W, Channel) --> not sure what H, W, C meant to stand for
+    :param x_pred: Hyperspectral Imagery: Format：(H, W, C)
+    :return: Calculate the mean square error between the original hyperspectral data and the reconstructed hyperspectral data
     References
     ----------
     .. [1] https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
     """
-    n_bands = x_true.shape[2]
+    # .shape from skimage, find apparent local shape 
+    n_bands = x_true.shape[2] #How many bands are there?
     p = [
+        #psnr is the ratio between the maximum possible power of a signal and the power of corrupting noise
         peak_signal_noise_ratio(
             x_true[:, :, k], x_pred[:, :, k], dynamic_range=np.max(x_true[:, :, k])
         )
@@ -32,9 +37,9 @@ def mpsnr(x_true, x_pred):
 
 def sam(x_true, x_pred):
     """
-    :param x_true: 高光谱图像：格式：(H, W, C)
-    :param x_pred: 高光谱图像：格式：(H, W, C)
-    :return: 计算原始高光谱数据与重构高光谱数据的光谱角相似度
+    :param x_true: Hyperspectral Imagery: Format：(H, W, C)
+    :param x_pred: Hyperspectral Imagery: Format：(H, W, C)
+    :return: Calculate the spectral angle similarity between the original hyperspectral data and the reconstructed hyperspectral data
     """
     assert x_true.ndim == 3 and x_true.shape == x_pred.shape
     sam_rad = np.zeros([x_pred.shape[0], x_pred.shape[1]])
@@ -70,9 +75,9 @@ def ergas(x_true, x_pred):
 
 def mssim(x_true, x_pred):
     """
-    :param x_true: 高光谱图像：格式：(H, W, C)
-    :param x_pred: 高光谱图像：格式：(H, W, C)
-    :return: 计算原始高光谱数据与重构高光谱数据的结构相似度
+    :param x_true: Hyperspectral Imagery:(H, W, C)
+    :param x_pred: Hyperspectral Imagery:(H, W, C)
+    :return: Calculate the structural similarity between the original hyperspectral data and the reconstructed hyperspectral data
     """
     SSIM = structural_similarity(X=x_true, Y=x_pred, multichannel=True)
     return SSIM
