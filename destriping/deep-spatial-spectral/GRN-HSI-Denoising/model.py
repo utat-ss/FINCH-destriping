@@ -75,7 +75,6 @@ def GloRe(X):
 
     def GCN(Vnode, nodeN, mid_chancel):
         net = tf.layers.conv2d(Vnode, N, 1, padding="valid")  # [B, 1, C, N]
-
         net = Vnode + net  # (I-Ag)V
         net = tf.nn.relu(net)
 

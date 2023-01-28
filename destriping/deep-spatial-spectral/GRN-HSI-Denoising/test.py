@@ -8,18 +8,17 @@
 import os
 import time
 
-pass
-pass
-pass
 # external
+import h5py
+import matplotlib.image as img
+import matplotlib.pyplot as plt
 import model as model
 import numpy as np
 import scipy.io
-
-pass
-# external
+import skimage
 import tensorflow as tf
-from Indexes import sam
+from Indexes import ergas, sam
+
 from skimage.measure import compare_psnr, compare_ssim
 
 # import cv2

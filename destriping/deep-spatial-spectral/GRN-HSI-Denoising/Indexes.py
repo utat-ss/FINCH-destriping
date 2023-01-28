@@ -8,7 +8,7 @@
 # external
 import numpy as np
 from numpy.linalg import norm
-from skimage.measure import compare_psnr, compare_ssim
+from skimage.measure import compare_mse, compare_psnr, compare_ssim
 
 
 def mpsnr(x_true, x_pred):
