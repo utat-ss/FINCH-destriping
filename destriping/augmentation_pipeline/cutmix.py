@@ -22,12 +22,31 @@ IMG_SIZE = 32
 
 
 def preprocess_image(image, label):
+    """Preprocesses the image by resizing it, normalizing it and converting it to float32.
+
+    Args:
+        image: The image to preprocess.
+        label: The label of the image.
+    
+    Returns:
+        The preprocessed image and label.
+    """
     image = tf.image.resize(image, (IMG_SIZE, IMG_SIZE))
     image = tf.image.convert_image_dtype(image, tf.float32) / 255.0
     return image, label
 
 
 def sample_beta_distribution(size, concentration_0=0.2, concentration_1=0.2):
+    """Samples from a Beta distribution.
+
+    Args:
+        size: The size of the sample.
+        concentration_0: The concentration parameter of the first Gamma distribution.
+        concentration_1: The concentration parameter of the second Gamma distribution.
+    
+    Returns:
+        The sample from the Beta distribution.
+    """
     gamma_1_sample = tf.random.gamma(shape=[size], alpha=concentration_1)
     gamma_2_sample = tf.random.gamma(shape=[size], alpha=concentration_0)
     return gamma_1_sample / (gamma_1_sample + gamma_2_sample)
@@ -35,6 +54,14 @@ def sample_beta_distribution(size, concentration_0=0.2, concentration_1=0.2):
 
 @tf.function
 def get_box(lambda_value):
+    """Gets the bounding box offsets, heights and widths.
+
+    Args:
+        lambda_value: The lambda value.
+    
+    Returns:
+        The bounding box offsets, heights and widths.
+    """
     cut_rat = tf.math.sqrt(1.0 - lambda_value)
 
     cut_w = IMG_SIZE * cut_rat  # rw
@@ -64,6 +91,15 @@ def get_box(lambda_value):
 
 @tf.function
 def cutmix(train_ds_one, train_ds_two):
+    """Applies CutMix augmentation to the dataset.
+
+    Args:
+        train_ds_one: The first image.
+        train_ds_two: The second image.
+    
+    Returns:
+        The augmented image.
+    """
     (image1, label1), (image2, label2) = train_ds_one, train_ds_two
 
     alpha = [0.25]
