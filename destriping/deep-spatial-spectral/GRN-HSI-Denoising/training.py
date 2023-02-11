@@ -16,6 +16,7 @@ from scipy import io
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 ############################################################################
 
+#Defining constants to be used in the training process using tensorflow
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer("num_h5_file", 1, """number of training h5 files.""")
 tf.app.flags.DEFINE_integer(
@@ -34,32 +35,33 @@ tf.app.flags.DEFINE_string(
 )
 
 
-# read h5 files
+# read h5 files, returns numpy arrays of data and corresponding labels 
 def read_data(file):
     with h5py.File(file, "r") as hf:
         data = hf.get("data")
         label = hf.get("label")
         return np.array(data), np.array(label)
 
-
+# Uses SSIM to compute loss between prediction (estimation) and existing target values
 def compute_ssim_loss(pred, gt):
     value = 1.0 - tf.image.ssim(pred, gt, max_val=1.0)
     loss = tf.reduce_mean(value)
     return loss
 
-
+# L1 loss is the absolute differences between the estimated values and the existing target values
 def compute_L1_loss(pred, gt):
     value = tf.abs(pred - gt)
     loss = tf.reduce_mean(value)
     return loss
 
-
+# L2 loss is the squared differences between the estimated and existing target values
 def compute_L2_loss(pred, gt):
     value = tf.square(pred - gt)
     loss = tf.reduce_mean(value)
     return loss
 
-
+# Saves the model path and its associated training error. 
+    # Useful for finding best performing model path. 
 def savemodel(save_model_path, training_error):
     return io.savemat(
         save_model_path + "training_error.mat", {"training_error": training_error}
@@ -68,18 +70,25 @@ def savemodel(save_model_path, training_error):
 
 if __name__ == "__main__":
 
+    #Empty image placeholder
     images = tf.placeholder(
         tf.float32, shape=(None, FLAGS.image_size, FLAGS.image_size, FLAGS.num_channels)
     )  # data
+
+    #Empty label placeholder 
     labels = tf.placeholder(
         tf.float32, shape=(None, FLAGS.label_size, FLAGS.label_size, FLAGS.num_channels)
     )  # detail layer
 
+    #Make output 
     outputs = model.Inference(images)
+
+    #Store L1 loss
     loss = compute_L1_loss(labels, outputs)
 
     lr_ = FLAGS.learning_rate
-    lr = tf.placeholder(tf.float32, shape=[])
+    lr = tf.placeholder(tf.float32, shape=[]) 
+    #Q: What is the difference between lr_ and lr?
 
     all_vars = tf.trainable_variables()
     print(
@@ -93,11 +102,11 @@ if __name__ == "__main__":
 
     config = tf.ConfigProto()
     config.gpu_options.per_process_gpu_memory_fraction = 0.5  # GPU setting
-    config.gpu_options.allow_growth = True
+    config.gpu_options.allow_growth = True 
 
     data_path = FLAGS.data_path
     save_path = FLAGS.save_model_path
-    epoch = int(FLAGS.epoch)
+    epoch = int(FLAGS.epoch) #What is epoch?
 
     with tf.Session(config=config) as sess:
 
@@ -139,6 +148,7 @@ if __name__ == "__main__":
 
         start = time.time()
 
+        #Not sure what this is supposed to do
         for j in range(start_point, epoch):  # epoch
             l = j - start_point
             Epoch = epoch - start_point
@@ -149,6 +159,7 @@ if __name__ == "__main__":
             #      if l+1 >(3*Epoch/4):
             #        lr_ = 0.00001
 
+            #COMPUTING LOSS
             Training_Loss = 0.0
 
             for num in range(FLAGS.num_h5_file):  # h5 files
