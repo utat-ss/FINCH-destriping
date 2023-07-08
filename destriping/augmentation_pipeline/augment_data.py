@@ -60,7 +60,6 @@ def modified_cutmix(datacube_one, datacube_two):
     Returns:
         datacube: CutMixed product of both datasets
     '''
-    (image1), (image2) = datacube_one[0], datacube_two[0] #Assuming this line originally selects a single image and it's label
 
     alpha = [0.25]
     beta = [0.25]
@@ -75,6 +74,7 @@ def modified_cutmix(datacube_one, datacube_two):
     boundaryx1, boundaryy1, target_h, target_w = cm.get_box(lambda_value)
 
     for i in range(0, len(datacube_one)): #i.e. for each index/spectra in datacube_one
+        (image1), (image2) = datacube_one[i], datacube_two[i] #Assuming this line originally selects a single image and it's label
         # Get a patch from the second image (`image2`)
         crop2 = tf.image.crop_to_bounding_box(
             image2, boundaryy1, boundaryx1, target_h, target_w
