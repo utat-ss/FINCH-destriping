@@ -18,8 +18,8 @@ tf.random.set_seed(42)
 
 #HYPERPARAMETERS
 AUTO = tf.data.AUTOTUNE
-BATCH_SIZE = 0 #TODO: PLACEHOLDER
-IMG_SIZE = 0 #TODO: PLACEHOLDER
+BATCH_SIZE = 0 #TODO: PLACEHOLDER - won't worry about this for now
+IMG_SIZE = 512 #Might be 640 - sensor is 512 by 640 so which dimension is which?
 
 #IMPORT
 def import_data(filename):
