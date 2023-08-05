@@ -1,9 +1,10 @@
 """
 Author: [@Rishit-Dagli](https://github.com/Rishit-dagli)
 """
-"""
-_mixup_ is a *domain-agnostic* data augmentation technique proposed in [mixup: Beyond Empirical Risk Minimization](https://arxiv.org/abs/1710.09412)
-by Zhang et al.
+"""_mixup_ is a *domain-agnostic* data augmentation technique proposed in.
+
+[mixup: Beyond Empirical Risk Minimization](https://arxiv.org/abs/1710.09412) by
+Zhang et al.
 
 (The lambda hyperparameter values are values with the [0, 1] range and are sampled from the
 [Beta distribution](https://en.wikipedia.org/wiki/Beta_distribution).)
@@ -17,12 +18,16 @@ their labels.
 
 mixup is specifically useful when we are not sure about selecting a set of augmentation
 transforms for a given dataset, and is specially useful for image data.
+
 """
 
-import numpy as np
+# external
+pass
+pass
+# external
 import tensorflow as tf
-import matplotlib.pyplot as plt
-from tensorflow.keras import layers
+
+pass
 
 IMG_SIZE = 224
 AUTO = tf.data.AUTOTUNE
@@ -35,16 +40,12 @@ def preprocess_image(image, label):
 
 
 def x_train(x):
-    """
-    A placeholder function to get the data.
-    """
+    """A placeholder function to get the data."""
     return x
 
 
 def y_train(y):
-    """
-    A placeholder function to get the data.
-    """
+    """A placeholder function to get the data."""
     return y
 
 
