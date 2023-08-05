@@ -11,6 +11,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import cutmix as cm
+import mixup as mu
 import apply_stripes
 
 np.random.seed(42)
@@ -73,6 +74,8 @@ def modified_cutmix(datacube_one, datacube_two):
     # Get the bounding box offsets, heights and widths
     boundaryx1, boundaryy1, target_h, target_w = cm.get_box(lambda_value)
 
+    datacube = []
+
     for i in range(0, len(datacube_one)): #i.e. for each index/spectra in datacube_one
         (image1), (image2) = datacube_one[i], datacube_two[i] #Assuming this line originally selects a single image and it's label
         # Get a patch from the second image (`image2`)
@@ -96,7 +99,6 @@ def modified_cutmix(datacube_one, datacube_two):
         # (before applying the `image2` patch)
         image1 = image1 - img1
         # Add the modified `image1` and `image2`  together to get the CutMix image
-        datacube = []
         datacube[i] = image1 + image2 #make the ith index of the datacube the CutMix of the ith indices of image1 and image2
 
         # Adjust Lambda in accordance to the pixel ration
@@ -106,11 +108,27 @@ def modified_cutmix(datacube_one, datacube_two):
     return datacube
 
 #MIXUP IMPLEMENTATION
-def apply_mixup():
+def modified_mixup(datacube_one, datacube_two, alpha=0.2):
     '''
     
     '''
-    return
+    # Unpack two datasets
+    images_one = datacube_one[0]
+    images_two = datacube_two[0]
+    batch_size = tf.shape(images_one)[0]
+
+    # Sample lambda and reshape it to do the mixup
+    l = mu.sample_beta_distribution(batch_size, alpha, alpha)
+    x_l = tf.reshape(l, (batch_size, 1, 1, 1))
+
+    datacube = []
+
+    for i in range(0, len(datacube_one)):
+    # Perform mixup on both images and labels by combining a pair of images/labels
+    # (one from each dataset) into one image/label
+        datacube[i] = images_one * x_l + images_two * (1 - x_l)
+    
+    return datacube
 
 #EVERYTHING ELSE
 def apply_stripes():
