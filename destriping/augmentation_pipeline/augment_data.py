@@ -162,13 +162,13 @@ def augment_data(filename_one, filename_two):
     dataset_two = import_data(filename_two)
 
     #Apply modified cutmix to the two datasets to produce the augmented dataset
-    augmented_dataset = modified_cutmix(dataset_one, dataset_two)
+    augmented_dataset = [modified_cutmix(dataset_one, dataset_two), modified_mixup(dataset_one, dataset_two)]
 
     #TODO: MixUp goes in here somewhere as well.
 
     #Apply stripes
     number_of_stripes = 20 #TODO: PLACEHOLDER
-    augmented_dataset = apply_stripes.add_multiplicative_stripes(augmented_dataset, number_of_stripes)
+    augmented_dataset = [apply_stripes.add_multiplicative_stripes(augmented_dataset[0], number_of_stripes), apply_stripes.add_multiplicative_stripes(augmented_dataset[1], number_of_stripes)]
 
     return augmented_dataset
 
