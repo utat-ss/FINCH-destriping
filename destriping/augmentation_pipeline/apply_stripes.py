@@ -30,13 +30,14 @@ def _vary_len(dims, col):
     # we can pick where it can be
     length = random.uniform(0, dims[1])
     position = random.uniform(length/2, dims[1]-length/2)
-
     # change to a uniform stripe
+    for i in position:
+        col[i] = 0
 
     return col
 
 
-def _add_noise(frame):
+def _add_noise(frame, mean =0, std=25):
     """
     args:
     std: the standard deviation of the noise
@@ -44,11 +45,11 @@ def _add_noise(frame):
 
     returns:
     """
-    # noise to the stripes value of the channels to
-    # create a gaussian thing
-    data_cube = 0
+    row, col  = frame.shape
+    gauss = np.random.normal(mean, std, (row, col))
+    noisy_image = frame + gauss
+    return np.clip(noisy_image, 0, 255)
 
-    return
 
 def _add_empty(column):
     """
@@ -57,7 +58,11 @@ def _add_empty(column):
     returns:
     """
     # we can pick a uniform random number between 0-60% of the thing with stripes
-    return
+    for pixel in column:
+        pixel = 0
+
+    return column
+
 
 def _select_lines(dims, clusters, num_lines, max_clusters):
     """
@@ -67,8 +72,9 @@ def _select_lines(dims, clusters, num_lines, max_clusters):
         num_lines: number of lines to select
 
         returns:
-        List of positions of cols to stripe
+        List of int, representing the lines to return
     """
+
 
     cols_striped = []
 
@@ -82,6 +88,7 @@ def _select_lines(dims, clusters, num_lines, max_clusters):
             num_stripes = int(random.gauss(dims[1]/10, dims[1]/10))
             cluster = [np.random.normal(cols, dims[1]/20, num_stripes)]
             cols_striped += cluster
+        # make sure each line is non-repeating in the list of lines
         cols_striped = list(set(cols_striped))
     else:
         cols_striped = random.sample((0, dims[1]), num_lines)
@@ -125,13 +132,17 @@ def add_stripes(datacube, noise=True, empty=True, clusters=True, vary_len=True, 
         for col_line in col_lines:
             striped_col = striped_data[1][col_line]
             # vary the length of this column
-            if vary_len:
+
+            if empty and vary_len:
+                _vary_len(dims, striped_col)
+                _add_empty(striped_data, col_line)
+            elif vary_len:
                 _vary_len(dims, striped_col)
             #vary the length of this column
-            if empty:
+            elif empty:
                 _add_empty(striped_data, col_line)
 
-            striped_data[col_line ,:, i] = striped_col
+            striped_data[: , col_line, i] = striped_col
         # add noise to the frame
         if noise:
             _add_noise(striped_data[:,:,i])
