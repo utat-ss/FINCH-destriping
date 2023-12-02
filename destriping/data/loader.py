@@ -5,15 +5,25 @@ import torch
 from spectral import imshow, save_rgb
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 from augmentation_pipeline.cutmix_mixup import generate_augmented_images
 
+
 class AugmentedDataset(Dataset):
-    def __init__(self, dataset, alpha=0.5, size=16, mixup_images=None, cutmix_images=None):
-        augmented_images_cutmix = generate_augmented_images(dataset, num_samples=cutmix_images, augmentation_type="cutmix")
-        augmented_images_mixup = generate_augmented_images(dataset, num_samples=mixup_images, augmentation_type="mixup")
+    def __init__(
+        self, dataset, alpha=0.5, size=16, mixup_images=None, cutmix_images=None
+    ):
+        augmented_images_cutmix = generate_augmented_images(
+            dataset, num_samples=cutmix_images, augmentation_type="cutmix"
+        )
+        augmented_images_mixup = generate_augmented_images(
+            dataset, num_samples=mixup_images, augmentation_type="mixup"
+        )
         original_images = [dataset[i] for i in range(dataset.__len__())]
-        stacked_tensor = torch.stack(original_images + augmented_images_cutmix + augmented_images_mixup)
+        stacked_tensor = torch.stack(
+            original_images + augmented_images_cutmix + augmented_images_mixup
+        )
         self.images = stacked_tensor
         self.cube = self.images.numpy()
 
@@ -30,7 +40,8 @@ class AugmentedDataset(Dataset):
             plt.savefig(save_to)
         plt.show()
         return
-    
+
+
 class HyperSpectralCube(Dataset):
     def __init__(self, mat_path, label="paviaU"):
         data = io.loadmat(mat_path)[label]

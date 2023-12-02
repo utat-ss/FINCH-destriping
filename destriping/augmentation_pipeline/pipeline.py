@@ -1,9 +1,14 @@
 import argparse
+
 parser = argparse.ArgumentParser()
 parser.add_argument("data", help="path to the dataset", type=str)
 parser.add_argument("add_stripes", help="should we add stripes", type=bool)
-parser.add_argument("num_stripes", help="stripes per image, 0 for randomly chosen in bounds", type=int)
-parser.add_argument("data_save", help="path where the dataset should be saved", type=str)
+parser.add_argument(
+    "num_stripes", help="stripes per image, 0 for randomly chosen in bounds", type=int
+)
+parser.add_argument(
+    "data_save", help="path where the dataset should be saved", type=str
+)
 args = parser.parse_args()
 
 
@@ -61,5 +66,6 @@ def add_multiplicative_stripes(data_cube, stripe_per_image=0):
             striped_data[:, col_stripes[k], i] *= multiplier[k]
 
     return striped_data
+
 
 np.save(augmented, args.data_save)
