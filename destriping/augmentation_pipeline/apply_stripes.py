@@ -14,6 +14,7 @@ import random
 # external
 import numpy as np
 
+
 # Creating a class to stripe a datacube
 # Helps with data
 
@@ -53,13 +54,15 @@ def _add_noise(frame, mean =0, std=25):
 
 def _add_empty(column):
     """
+    TODO
     args:
 
     returns:
     """
     # we can pick a uniform random number between 0-60% of the thing with stripes
-    for pixel in column:
-        pixel = 0
+    # l = column.shape(0)
+    # for i in range(0, column):
+    #     column
 
     return column
 
@@ -82,7 +85,8 @@ def _select_lines(dims, clusters, num_lines, max_clusters):
     if clusters:
         num_clusters = int(random.uniform(0, max_clusters))
         # all locations to generate clusters
-        cluster_cols = random.sample((0, dims[1]), num_clusters)
+        cluster_cols = random.sample(range(0, dims[1]), num_clusters)
+
         for cols in cluster_cols:
             # add number of stripes per cluster
             num_stripes = int(random.gauss(dims[1]/10, dims[1]/10))
@@ -96,7 +100,7 @@ def _select_lines(dims, clusters, num_lines, max_clusters):
     return cols_striped
 
 
-def add_stripes(datacube, noise=True, empty=True, clusters=True, vary_len=True, mean_stripes = None, var_stripes = None, max_clusters = 6):
+def add_stripes(datacube, noise=True, empty=True, clusters=True, vary_len=True, mean_stripes = None, var_stripes = None, by_layers = False, max_clusters = 6):
     """
     Adds stripes to the data cube depending on the parameters
 
@@ -125,12 +129,33 @@ def add_stripes(datacube, noise=True, empty=True, clusters=True, vary_len=True, 
     if var_stripes is None:
         var_stripes = dims[1]/10
 
+    if by_layers is True:
+        for i in range(0, dims[2]):
+            num_stripes = int(random.gauss(mean_stripes, var_stripes))
+            col_lines = _select_lines(dims, clusters, num_stripes, max_clusters) # select a random amount of lines
+            for col_line in col_lines:
+                striped_col = striped_data[: , col_line, i]
+                # vary the length of this column
 
-    for i in range(0, dims[2]):
+                if empty and vary_len:
+                    _vary_len(dims, striped_col)
+                    _add_empty(striped_data, col_line)
+                elif vary_len:
+                    _vary_len(dims, striped_col)
+                #vary the length of this column
+                elif empty:
+                    _add_empty(striped_data, col_line)
+
+                striped_data[: , col_line, i] = striped_col
+            # add noise to the frame
+            if noise:
+                _add_noise(striped_data[:,:,i])
+
+    elif by_layers is False:
         num_stripes = int(random.gauss(mean_stripes, var_stripes))
-        col_lines = _select_lines(dims, clusters, num_stripes, max_clusters)
+        col_lines = _select_lines(dims, clusters, num_stripes, max_clusters) # select a random amount of lines
         for col_line in col_lines:
-            striped_col = striped_data[1][col_line]
+            striped_col = striped_data[: , col_line, :]
             # vary the length of this column
 
             if empty and vary_len:
@@ -142,9 +167,12 @@ def add_stripes(datacube, noise=True, empty=True, clusters=True, vary_len=True, 
             elif empty:
                 _add_empty(striped_data, col_line)
 
-            striped_data[: , col_line, i] = striped_col
+            striped_data[: , col_line, :] = striped_col
         # add noise to the frame
         if noise:
             _add_noise(striped_data[:,:,i])
 
     return striped_data
+
+
+
