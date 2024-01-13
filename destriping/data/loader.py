@@ -15,14 +15,15 @@ class AugmentedDataset(Dataset):
         self, dataset, alpha=0.5, size=16, mixup_images=None, cutmix_images=None
     ):
         augmented_images_cutmix = generate_augmented_images(
-            dataset, num_samples=cutmix_images, augmentation_type="cutmix"
+            dataset, num_samples=cutmix_images, augmentation_type="cutmix", size = size
         )
         augmented_images_mixup = generate_augmented_images(
-            dataset, num_samples=mixup_images, augmentation_type="mixup"
+            dataset, num_samples=mixup_images, augmentation_type="mixup", alpha = alpha
         )
-        original_images = [dataset[i] for i in range(dataset.__len__())]
+        # original_images = [dataset[i] for i in range(dataset.__len__())]
         stacked_tensor = torch.stack(
-            original_images + augmented_images_cutmix + augmented_images_mixup
+            augmented_images_cutmix + augmented_images_mixup
+            # original_images + augmented_images_cutmix + augmented_images_mixup
         )
         self.images = stacked_tensor
         self.cube = self.images.numpy()
@@ -38,7 +39,7 @@ class AugmentedDataset(Dataset):
         plt.imshow(self.images[index])
         if save_to:
             plt.savefig(save_to)
-        plt.show()
+        # plt.show()
         return
 
 
