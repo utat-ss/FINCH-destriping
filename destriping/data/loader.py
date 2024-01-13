@@ -20,7 +20,7 @@ class AugmentedDataset(Dataset):
         augmented_images_mixup = generate_augmented_images(
             dataset, num_samples=mixup_images, augmentation_type="mixup", alpha = alpha
         )
-        # original_images = [dataset[i] for i in range(dataset.__len__())]
+        original_images = [dataset[i] for i in range(dataset.__len__())]
         stacked_tensor = torch.stack(
             augmented_images_cutmix + augmented_images_mixup
             # original_images + augmented_images_cutmix + augmented_images_mixup
