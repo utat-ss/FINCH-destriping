@@ -28,7 +28,7 @@ def main(args):
     for i in range(aug.__len__()):
         output_path = f"{output_directory}/{i + 1}.png"
         aug.plot(i, save_to=output_path)
-    print(f"Saved augmented dataset to {output_path}")
+    print(f"Saved augmented dataset to {output_directory}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate and save augmented images from a hypercube.")
