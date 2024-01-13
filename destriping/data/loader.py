@@ -23,7 +23,7 @@ class AugmentedDataset(Dataset):
         original_images = [dataset[i] for i in range(dataset.__len__())]
         stacked_tensor = torch.stack(
             augmented_images_cutmix + augmented_images_mixup
-            # original_images + augmented_images_cutmix + augmented_images_mixup
+            original_images + augmented_images_cutmix + augmented_images_mixup
         )
         self.images = stacked_tensor
         self.cube = self.images.numpy()
