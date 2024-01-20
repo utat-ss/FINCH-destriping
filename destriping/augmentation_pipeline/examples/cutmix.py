@@ -27,7 +27,7 @@ def preprocess_image(image, label):
     Args:
         image: The image to preprocess.
         label: The label of the image.
-    
+
     Returns:
         The preprocessed image and label.
     """
@@ -43,7 +43,7 @@ def sample_beta_distribution(size, concentration_0=0.2, concentration_1=0.2):
         size: The size of the sample.
         concentration_0: The concentration parameter of the first Gamma distribution.
         concentration_1: The concentration parameter of the second Gamma distribution.
-    
+
     Returns:
         The sample from the Beta distribution.
     """
@@ -58,7 +58,7 @@ def get_box(lambda_value):
 
     Args:
         lambda_value: The lambda value.
-    
+
     Returns:
         The bounding box offsets, heights and widths.
     """
@@ -96,7 +96,7 @@ def cutmix(train_ds_one, train_ds_two):
     Args:
         train_ds_one: The first image.
         train_ds_two: The second image.
-    
+
     Returns:
         The augmented image.
     """

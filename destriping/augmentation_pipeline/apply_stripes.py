@@ -18,17 +18,29 @@ def _check_configs(configs):
     '''
         checks configs to see if there any empty ones, if so
         fills them with these default values
+
+        
+        snp_noise: true to turn on salt and pepper noise
+        gaussian_noise: true to turn on gaussian noise
+        clusters: true to turn on clusters
+        fragmented: true to fragment the stripes
+        by_layers: true to make each band/layer fragmented differently
+        noise_level: controls the frequency of the lines
+        salt: the probability of salt noise in the image
+        pepper: the probability of pepper of pepper noise in the image
+        max_clusters: the maximum amount of clusters defaulted at 10
+        bit: the bit that the image is in defaulted at 16
     '''
     # Define default values
     default_values = {
-        'snp_noise': True,
-        'gaussian_noise': True,
-        'clusters': True,
-        'fragmented': True,
+        'snp_noise': False,
+        'gaussian_noise': False,
+        'clusters': False,
+        'fragmented': False,
         'by_layers': True,
-        'noise_level': -1, # randomize this
-        'salt':-1, # randomize
-        'peppers':-1, # randomize
+        'noise_level': -1, 
+        'salt':-1, 
+        'pepper':-1, 
         'max_clusters': 10,
         'bit': 16
     }
@@ -51,7 +63,7 @@ def _gaussian_stripe(data, configs):
     dims = data.shape
     noise_level = configs['noise_level'] # [0, 1)
     if noise_level < 0:
-        noise_level = np.random.uniform(0,0.5,1)
+        noise_level = np.random.uniform(0, 0.2,1)
 
 
     # select columns
@@ -61,11 +73,11 @@ def _gaussian_stripe(data, configs):
 
     for i in range(data.shape[2]):
         if configs['by_layers'] is False:
-            col_lines = _select_lines(dims,configs)
+            col_lines = _select_lines(dims,configs) #all cols that will have a stripe
+
         
-        
-        mean=0
         range_value=np.max(data[:,:,i])-np.min(data[:,:,i])
+        mean=0
         std_dev=noise_level*range_value
 
 
@@ -73,10 +85,10 @@ def _gaussian_stripe(data, configs):
         noise=np.round(np.random.normal(mean, std_dev, len(col_lines))).astype('<u2')
 
         # fragment these colines
-        
+
         # choose lengths and fragments
         if configs['fragmented'] is True:
-            # for a slice?
+            # fragments each 
             data = _choose_slices(data, i ,col_lines ,noise)
         else:
             data[:,col_lines,i] += noise
@@ -141,9 +153,9 @@ def _add_snp_noise(cube, salt_prob, pepper_prob):
     returns:
     """
     if salt_prob < 0:
-        salt_prob = np.random.uniform(0, 0.5, 1 )
+        salt_prob = np.random.uniform(0, 0.1, 1 )
     if pepper_prob < 0:
-        pepper_prob = np.random.uniform(0, 0.5, 1)
+        pepper_prob = np.random.uniform(0, 0.1, 1)
     # Salt noise
     salt_mask = np.random.rand(*cube.shape) < salt_prob
     cube[salt_mask] = 1.0
