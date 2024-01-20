@@ -26,9 +26,9 @@ def _check_configs(configs):
         'clusters': True,
         'fragmented': True,
         'by_layers': True,
-        'noise_level': 0.15,
-        'stripe_frequency': 1,
-        'noise_range_scaling': 1,
+        'noise_level': -1, # randomize this
+        'salt':-1, # randomize
+        'peppers':-1, # randomize
         'max_clusters': 10,
         'bit': 16
     }
@@ -50,7 +50,8 @@ def _gaussian_stripe(data, configs):
         # pick a random length
     dims = data.shape
     noise_level = configs['noise_level'] # [0, 1)
-
+    if noise_level < 0:
+        noise_level = np.random.uniform(0,0.5,1)
 
 
     # select columns
@@ -129,7 +130,7 @@ def _choose_slices(data, i, col_lines, noise):
 
 
 
-def _add_snp_noise(cube, salt_prob = 0.02, pepper_prob=0.02):
+def _add_snp_noise(cube, salt_prob, pepper_prob):
     """
     args:
     cube: the datacube
@@ -139,7 +140,10 @@ def _add_snp_noise(cube, salt_prob = 0.02, pepper_prob=0.02):
 
     returns:
     """
-
+    if salt_prob < 0:
+        salt_prob = np.random.uniform(0, 0.5, 1 )
+    if pepper_prob < 0:
+        pepper_prob = np.random.uniform(0, 0.5, 1)
     # Salt noise
     salt_mask = np.random.rand(*cube.shape) < salt_prob
     cube[salt_mask] = 1.0
@@ -150,7 +154,7 @@ def _add_snp_noise(cube, salt_prob = 0.02, pepper_prob=0.02):
     
     return cube
 
-def _add_gaussian_noise(cube,bit, mean_percent =0.05, std_percent=0.1 ):
+def _add_gaussian_noise(cube,bit, mean_percent = 0.05, std_percent=0.1 ):
     """
     args:
     cube: the datacube
@@ -247,6 +251,6 @@ def add_stripes(datacube, configs=None):
     if configs['gaussian_noise']:
         striped_data = _add_gaussian_noise(striped_data, configs['bit'])
     if configs['snp_noise']:
-        striped_data = _add_snp_noise(striped_data, configs['bit'])
+        striped_data = _add_snp_noise(striped_data, configs['salt'], configs['pepper'])
 
     return striped_data
