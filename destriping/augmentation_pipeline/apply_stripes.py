@@ -20,16 +20,17 @@ def _check_configs(configs):
         fills them with these default values
 
         
-        snp_noise: true to turn on salt and pepper noise
-        gaussian_noise: true to turn on gaussian noise
-        clusters: true to turn on clusters
-        fragmented: true to fragment the stripes
-        by_layers: true to make each band/layer fragmented differently
-        noise_level: controls the frequency of the lines
-        salt: the probability of salt noise in the image
-        pepper: the probability of pepper of pepper noise in the image
-        max_clusters: the maximum amount of clusters defaulted at 10
-        bit: the bit that the image is in defaulted at 16
+        snp_noise: bool, true to add salt and pepper noise to the hypercube
+        gaussian_noise: bool, true to add gaussian noise to the hypercube
+        clusters: bool,  true to turn on clusters of stripes
+        fragmented: bool, true to fragment the stripes along the column
+        by_layers: bool,  true to make each band/layer fragmented differently
+        stripe_frequency: float, controls the frequency of the lines
+        stripe_intensity: float, controls the intensity of the noise on the lines
+        salt: float, the probability of salt noise in the image
+        pepper: float, the probability of pepper of pepper noise in the image
+        max_clusters: int, the maximum amount of clusters defaulted at 10
+        bit: int, the bit that the image is in defaulted at 16
     '''
     # Define default values
     default_values = {
@@ -38,7 +39,8 @@ def _check_configs(configs):
         'clusters': False,
         'fragmented': False,
         'by_layers': True,
-        'noise_level': -1, 
+        'stripe_frequency': 0.5,
+        'stripe_intensity': -1, 
         'salt':-1, 
         'pepper':-1, 
         'max_clusters': 10,
@@ -61,45 +63,52 @@ def _gaussian_stripe(data, configs):
         # four different striping scenarios, scales are standard deviations of 0.1%, 0.5%, 1% and 5% of individual band's range
         # pick a random length
     dims = data.shape
-    noise_level = configs['noise_level'] # [0, 1)
-    if noise_level < 0:
-        noise_level = np.random.uniform(0, 0.2,1)
+    stripe_intensity = configs['stripe_intensity'] # [0, 1)
+    if stripe_intensity < 0:
+        stripe_intensity = np.random.uniform(0.01, 0.3,1)
+    else:
+        # making sure each stripe has some variation to it in terms of intensity
+        stripe_intensity = max(0, stripe_intensity - 0.05)
+        stripe_intensity = np.random.uniform(stripe_intensity, stripe_intensity + 0.1,1)
 
 
-    # select columns
-    if configs['by_layers']is True:
-        col_lines = _select_lines(dims,configs)
+    # select new columns for each band
+    if configs['by_layers']:
+        col_lines = _select_lines(dims, configs)
 
 
     for i in range(data.shape[2]):
-        if configs['by_layers'] is False:
-            col_lines = _select_lines(dims,configs) #all cols that will have a stripe
+        if configs['by_layers']:
+            col_lines = _select_lines(dims, configs) #all cols that will have a stripe
 
-        
-        range_value=np.max(data[:,:,i])-np.min(data[:,:,i])
+        max_value= np.max(data[:,:,i])
+        min_value = np.min(data[:,:,i])
+        range_value= max_value - min_value
         mean=0
-        std_dev=noise_level*range_value
+        std_dev=stripe_intensity*range_value
 
 
         # all the col lines to add noise to
-        noise=np.round(np.random.normal(mean, std_dev, len(col_lines))).astype('<u2')
-
-        # fragment these colines
+        noise=np.round(np.random.uniform(mean, std_dev, len(col_lines))).astype('<u2')
+        
 
         # choose lengths and fragments
-        if configs['fragmented'] is True:
-            # fragments each 
+        if configs['fragmented']:
+            # fragments each column
             data = _choose_slices(data, i ,col_lines ,noise)
         else:
-            data[:,col_lines,i] += noise
+            data[:, col_lines, i] += noise
+
+
     return data
 
-def _generate_numbers(target_sum, max_value, array_size):
+def _generate_numbers(target_sum, array_size):
     # Generate random numbers between 0 and max_value
     random_numbers = []
     curr = target_sum
+    max_value = target_sum
     while len(random_numbers) < array_size:
-        temp = np.random.uniform(0, max_value, 1)
+        temp = np.random.uniform(0, max_value, 1)[0]
         if curr >= temp:
             random_numbers.append(temp)
             curr = curr - temp
@@ -116,11 +125,11 @@ def _choose_slices(data, i, col_lines, noise):
     for j, col in enumerate(col_lines):
         
         # create a random number of fragments on the column
-        num_fragments = np.random.randint(0, data.shape[1], 1)
+        num_fragments = np.random.randint(0, data.shape[1]-1, 1)
 
-        fragment_sizes = _generate_numbers(data.shape[1]-1, data.shape[1] -1 , num_fragments)
+        fragment_sizes = _generate_numbers(data.shape[1]-1, num_fragments)
 
-        fragment_starts = np.cumsum(fragment_sizes)[:-1]
+        fragment_starts = np.cumsum(fragment_sizes)
         fragment_starts = np.append(0, fragment_starts).astype('<u2')
         
 
@@ -131,12 +140,24 @@ def _choose_slices(data, i, col_lines, noise):
         frags = np.array(np.random.choice(fragment_starts.shape[0], num_frag_noise, replace = False))
 
         # for each fragment add noise to it
+
+
+        # YOU CAN MAKE THIS FASTER
         for frag in frags:
             start = fragment_starts[frag]
 
             # odd that this is an array but ok
-            end = start + fragment_sizes[frag]
-            data[start:end[0], col, i] += noise[j]
+
+            # if at capped size, then add nothing
+            if frag < fragment_sizes.shape[0]:
+                end = start + fragment_sizes[frag]
+            else:
+                end = start + 1
+            data[start:end, col, i] += noise[j]
+
+            # temp = data[start:end, col, i] # for debugging purpoess
+            # temp = temp + noise[j]
+            # data[start:end, col, i] = temp # for debugging purposes
     
     return data
 
@@ -194,7 +215,6 @@ def _select_lines(dims, configs):
     clusters: boolean
     r: ratio of columns to select
     max_clusters: int
-    v: stripe intensity???
 
     returns:
     List of int, representing the lines to return
@@ -204,8 +224,8 @@ def _select_lines(dims, configs):
     cols_striped = set()
     max_clusters = configs['max_clusters']
     clusters = configs['clusters']
+    stripe_frequency = configs['stripe_frequency']
 
-    #TODO figure out stripe intensity
 
     # if there are clusters we would want to find areas to cluster these values
     # number of clusters are usual uniform, in addition to the number of stripes
@@ -216,23 +236,33 @@ def _select_lines(dims, configs):
         cluster_cols = np.round(np.random.uniform(0, dims[1]-1, num_clusters)).astype(np.int32)
         
         # for each cluster center
-        for cols in cluster_cols:
+        for col in cluster_cols:
             # add number of stripes per cluster
-            # max number of stripes must be less than a certain number
-            num_stripes = np.round(np.random.uniform(0, dims[1], size=1)//num_clusters).astype(np.int32)
-            # for each "pivot" generate a cluster ie, positions of each striped column
-            # may need to change how this works  bc of how intensity works (if intensity high, becomes closer together
-            num_stripes = np.clip(num_stripes, 0, dims[1]-1)
+            # stripe frequency greater than is an illegal input and will default to random generation
+            if (stripe_frequency > 1) or (stripe_frequency < 0):
+                num_stripes = np.round(np.random.uniform(0, dims[1], size=1)).astype(np.int32)
+            else:
+                num_stripes = round(stripe_frequency* (dims[1]-1))
 
-            cluster = np.round(np.random.uniform(cols - num_stripes//2 ,cols + num_stripes//2 , num_stripes)).astype(np.int32)
+            # for each "cluster center" generate a cluster ie, positions of each striped column
+            # may need to change how this works  bc of how intensity works (if intensity high, becomes closer together
+            num_stripes = max(0,min(num_stripes, dims[1]-1))
+
+            start = max(0, col - num_stripes//2)
+            end = min(col + num_stripes//2, dims[1] -1)
+
+            
+            cluster = np.round(np.random.uniform(start,end , num_stripes)).astype(np.int32)
             cluster = np.clip(cluster, 0, dims[1]-1)
             cols_striped.update(cluster)
         # make sure each line is non-repeating in the list of lines
-        cols_striped = np.array(list(cols_striped))
-    else:
+        cols_striped = np.array(list(cols_striped)).astype(np.int32)
         # stripe frequency here
-        num_lines =np.round(np.random.uniform(0, (dims[1]-1), 1)).astype(np.int32)
-        cols_striped =np.round(np.random.uniform(0, dims[1]-1, num_lines)).astype(np.int32)
+    elif  1 < stripe_frequency  or stripe_frequency < 0:
+        num_lines =np.round(np.random.uniform(0, (dims[1]-1)//2, 1)).astype(np.int32)
+    else:
+        num_lines =  int((dims[1])*stripe_frequency)
+        cols_striped =np.round(np.random.uniform(0, dims[1]-1, num_lines - 1)).astype(np.int32)
 
     return cols_striped
 
@@ -256,7 +286,7 @@ def add_stripes(datacube, configs=None):
     configs = _check_configs(configs)
 
     # depending on the stripe types
-    _gaussian_stripe(striped_data ,configs)
+    striped_data = _gaussian_stripe(striped_data ,configs)
 
 
     # add noise to the frame
