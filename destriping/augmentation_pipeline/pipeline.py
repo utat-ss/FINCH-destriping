@@ -1,9 +1,13 @@
 import sys
 import os
 import shutil
+import numpy as np
+import ast
+import json
 
 sys.path.append("..")
 from data.loader import HyperSpectralCube, AugmentedDataset
+from apply_stripes import add_stripes
 # from augmentation_pipeline.cutmix_mixup import generate_augmented_images, visualize_augmentations, cutmix_augmentation, mixup_augmentation
 # import random
 import argparse
@@ -18,7 +22,20 @@ def main(args):
         cutmix_images=args.cutmix_images
     )
 
+
+    # look for striping configs if it doesnt exist use default
+    try:
+        with open(args.striping_configs) as f:
+            striping_configs = json.load(f)
+    except FileNotFoundError:
+        striping_configs = None
+        print("Striping configs not found. Setting default configs")
+   
+    aug.images = add_stripes(np.float32(aug.cube), striping_configs)
+
+
     output_directory = args.output_directory
+    # create a different thing
 
     #remove existing output directory and create a new one
     if os.path.exists(output_directory):
@@ -39,6 +56,13 @@ if __name__ == "__main__":
     parser.add_argument("--mixup_images", type=int, default=15, help="Number of mixup images for AugmentedDataset.")
     parser.add_argument("--cutmix_images", type=int, default=15, help="Number of cutmix images for AugmentedDataset.")
     parser.add_argument("--output_directory", type=str, default="output_images", help="Directory to save augmented images.")
+
+    parser.add_argument("--striping_configs", type=str, default={},help="Configuration list of apply stripes from a text file")
+
+# cd C:\Users\hecto\Documents\GitHub\FINCH-destriping\destriping\augmentation_pipeline
+# python pipeline.py --hypercube_path ../../datasets/PaviaU.mat --striping_configs
+
+
 
     args = parser.parse_args()
     main(args)

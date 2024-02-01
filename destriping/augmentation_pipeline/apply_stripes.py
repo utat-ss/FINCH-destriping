@@ -36,8 +36,8 @@ def _check_configs(configs):
     default_values = {
         'snp_noise': False,
         'gaussian_noise': False,
-        'clusters': False,
-        'fragmented': False,
+        'clusters': True,
+        'fragmented': True,
         'by_layers': True,
         'stripe_frequency': 0.5,
         'stripe_intensity': -1, 
