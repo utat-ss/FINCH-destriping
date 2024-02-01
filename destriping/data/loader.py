@@ -1,6 +1,6 @@
 from torch.utils.data.dataset import Dataset
 import numpy as np
-import scipy.io as io
+import scipy.io
 import torch
 from spectral import imshow, save_rgb
 import matplotlib.pyplot as plt
@@ -45,24 +45,28 @@ class AugmentedDataset(Dataset):
 
 class HyperSpectralCube(Dataset):
     def __init__(self, mat_path, label="paviaU"):
-        data = io.loadmat(mat_path)[label]
+        data = scipy.io.loadmat(mat_path)[label]
         data = np.float32(data)
         self.cube = data
         data = np.moveaxis(data, -1, 0)
         self.images = torch.from_numpy(data)
         self.bands = len(self.images)
+        
+    def __getcube__(self):
+        return self.images
 
-    def __getitem__(self, index):
-        x = self.images[index]
+    def __getitem__(self, band):
+        x = self.images[band]
         return x
 
     def __len__(self):
-        return len(self.images)
+        return self.bands
 
-    def plot(self, band, save_to=None):
+    def plot(self, band, save_to = None, show = False):
         imshow(self.cube, [band])
         if save_to:
             save_rgb(save_to, self.cube, [band])
-        #    plt.imshow(self.images[index])
-        #    plt.show()
+            if show:
+                plt.imshow(self.images[band])
+                plt.show()
         return
