@@ -102,7 +102,6 @@ def add_basic_stripes(data_cube, num_stripes=0):
 
 if __name__ == "__main__":
     # scipy.io.loadmat('test.mat')
-    # img_tmp = scipy.io.loadmat("/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/test_fns.mat")
 
     # print(img_tmp)
 
