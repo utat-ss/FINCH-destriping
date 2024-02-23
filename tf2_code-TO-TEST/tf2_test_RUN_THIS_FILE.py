@@ -36,17 +36,17 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 start = time.time()
 
-model_path = "/Users/prithviseran/Documents/GitHub/FINCH-destriping/GRN-HSI-Denoising-TO-TEST/pretrained_model/ICVL_stage2"
-# "/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case4"
-# "/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage1"
-#'/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage2' <- best
-# "/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case1"
-# "/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case3"
-# "/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case2"
-# "/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage1"
-#'/Users/prithviseran/Documents/GitHub/GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case5'  # can be changed
-data_path = "/Users/prithviseran/Documents/GitHub/FINCH-destriping/GRN-HSI-Denoising-TO-TEST/data/datasets/ICVL_test_pair_whole_image/stage1/icvl_50/"
-result_path = "/Users/prithviseran/Documents/GitHub/FINCH-destriping/GRN-HSI-Denoising-TO-TEST/icvl_test/"
+model_path = ".../GRN-HSI-Denoising-TO-TEST/pretrained_model/ICVL_stage2"
+# ".../GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case4"
+# ".../GRN-HSI-Denoising/pretrained_model/ICVL_stage1"
+#'.../GRN-HSI-Denoising/pretrained_model/ICVL_stage2' <- best
+# ".../GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case1"
+# ".../GRN/GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case3"
+# ".../GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case2"
+# ".../GRN-HSI-Denoising/pretrained_model/ICVL_stage1"
+#'.../GRN-HSI-Denoising/pretrained_model/ICVL_stage3/case5'  # can be changed
+data_path = ".../GRN-HSI-Denoising-TO-TEST/data/datasets/ICVL_test_pair_whole_image/stage1/icvl_50/"
+result_path = ".../FINCH-destriping/GRN-HSI-Denoising-TO-TEST/icvl_test/"
 
 
 # model_path = './model/CAVE/'
