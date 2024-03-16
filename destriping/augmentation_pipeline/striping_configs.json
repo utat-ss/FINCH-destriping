@@ -1,0 +1,13 @@
+{
+  "snp_noise": true,
+  "gaussian_noise": true,
+  "clusters": true,
+  "fragmented": false,
+  "by_layers": false,
+  "stripe_frequency": 0.3,
+  "stripe_intensity": 0.3,
+  "salt": 0.01,
+  "pepper": 0.01,
+  "max_clusters": 3,
+  "bit": 16
+}

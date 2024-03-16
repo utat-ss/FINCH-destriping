@@ -61,7 +61,7 @@ def _gaussian_stripe(data, configs):
         # Noise is additive
     # Magnitude: Sensor independent White Gaussian Noise (0 mean and specific standard deviations)
         # Dark current varies Gaussianly
-        #  0 Mean, 1 Standard Deviation. Rescaled later
+        # 0 Mean, 1 Standard Deviation. Rescaled later
         # four different striping scenarios, scales are standard deviations of 0.1%, 0.5%, 1% and 5% of individual band's range
         # pick a random length
     dims = data.shape
@@ -75,9 +75,7 @@ def _gaussian_stripe(data, configs):
 
 
     # select new columns for each band
-    if configs['by_layers']:
-        col_lines = _select_lines(dims, configs)
-
+    col_lines = _select_lines(dims, configs)
 
     for i in range(data.shape[2]):
         if configs['by_layers']:
@@ -89,20 +87,18 @@ def _gaussian_stripe(data, configs):
         mean=0
         std_dev=stripe_intensity*range_value
 
-
         # all the col lines to add noise to
-        noise=np.round(np.random.uniform(mean, std_dev, len(col_lines))).astype('<u2')
-        
-
+        # noise=np.round(np.random.uniform(mean, std_dev, len(col_lines))).astype('<u2')
+        noise =np.round(abs(np.random.normal(mean, std_dev, len(col_lines)))).astype('<u2')
         # choose lengths and fragments
         if configs['fragmented']:
             # fragments each column
             data = _choose_slices(data, i ,col_lines ,noise)
         else:
             data[:, col_lines, i] += noise
-
-
     return data
+
+
 
 def _generate_numbers(target_sum, array_size):
     # Generate random numbers between 0 and max_value
@@ -182,7 +178,8 @@ def _add_snp_noise(cube, salt_prob, pepper_prob):
         pepper_prob = np.random.uniform(0, 0.1, 1)
     # Salt noise
     salt_mask = np.random.rand(*cube.shape) < salt_prob
-    cube[salt_mask] = 1.0
+    for i in range(cube.shape[2]):
+        cube[salt_mask] = 1.0*np.max(cube[:,:,i])
     
     # Pepper noise
     pepper_mask = np.random.rand(*cube.shape) < pepper_prob
@@ -201,8 +198,14 @@ def _add_gaussian_noise(cube,bit, mean_percent = 0.05, std_percent=0.1 ):
     returns:
     """
     #max
-    _, col, _ = cube.shape
-    gauss = np.random.normal(mean_percent*col, std_percent*col, cube.shape)
+    # _, col, _ = cube.shape
+    # gauss = np.random.normal(mean_percent*col, std_percent*col, cube.shape)
+
+    # scales noise by maximum values in each spectrum
+    maximums = np.amax(cube, axis=(0, 1))
+    gauss = np.random.normal(mean_percent, std_percent, cube.shape)
+    for i in range(cube.shape[2]):
+        gauss[:,:,i]*=maximums[i]
     noisy_image = cube + gauss
     return np.clip(noisy_image, 0, 2**bit)
 
@@ -248,19 +251,24 @@ def _select_lines(dims, configs):
             if (stripe_frequency > 1) or (stripe_frequency < 0):
                 num_stripes = np.round(np.random.uniform(0, dims[1], size=1)).astype(np.int32)
             else:
-                num_stripes = round(stripe_frequency* (dims[1]-1))
+                num_stripes = round(stripe_frequency*(dims[1]-1))
 
             # for each "cluster center" generate a cluster ie, positions of each striped column
             # may need to change how this works  bc of how intensity works (if intensity high, becomes closer together
             num_stripes = max(0,min(num_stripes, dims[1]-1))
 
+            num_stripes=num_stripes//max_clusters
+
             start = max(0, col - num_stripes//2)
             end = min(col + num_stripes//2, dims[1] -1)
 
             
-            cluster = np.round(np.random.uniform(start,end , num_stripes)).astype(np.int32)
+            cluster = np.round(np.random.uniform(start,end, num_stripes)).astype(np.int32)
             cluster = np.clip(cluster, 0, dims[1]-1)
             cols_striped.update(cluster)
+        # adding remaining non-cluster stripes
+        num_lines =  int((dims[1])*stripe_frequency)
+        cols_striped.update(np.round(np.random.uniform(0, dims[1]-1, num_lines - len(cols_striped))).astype(np.int32))
         # make sure each line is non-repeating in the list of lines
         cols_striped = np.array(list(cols_striped)).astype(np.int32)
         # stripe frequency here
@@ -269,8 +277,7 @@ def _select_lines(dims, configs):
     else:
         num_lines =  int((dims[1])*stripe_frequency)
         cols_striped =np.round(np.random.uniform(0, dims[1]-1, num_lines - 1)).astype(np.int32)
-
-
+    # print(cols_striped)
     return cols_striped
 
 
@@ -302,5 +309,6 @@ def add_stripes(datacube, configs=None):
         striped_data = _add_gaussian_noise(striped_data, configs['bit'])
     if configs['snp_noise']:
         striped_data = _add_snp_noise(striped_data, configs['salt'], configs['pepper'])
+
 
     return striped_data

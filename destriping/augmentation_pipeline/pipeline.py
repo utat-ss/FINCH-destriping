@@ -1,9 +1,12 @@
+# cd destriping/augmentation_pipeline ; python pipeline.py --hypercube_path "../../datasets/PaviaU.mat" --striping_configs "striping_configs.json"
 import sys
 import os
 import shutil
 import numpy as np
 import ast
 import json
+import copy
+import pandas as pd
 
 sys.path.append("..")
 from data.loader import HyperSpectralCube, AugmentedDataset
@@ -21,7 +24,7 @@ def main(args):
         mixup_images=args.mixup_images,
         cutmix_images=args.cutmix_images
     )
-
+    aug_striped = copy.deepcopy(aug)
 
     # look for striping configs if it doesnt exist use default
     try:
@@ -31,8 +34,7 @@ def main(args):
         striping_configs = None
         print("Striping configs not found. Setting default configs")
    
-    aug.images = add_stripes(np.float32(aug.cube), striping_configs)
-
+    aug_striped.images = add_stripes(np.float32(aug.cube), striping_configs)
 
     output_directory = args.output_directory
     # create a different thing
@@ -42,10 +44,15 @@ def main(args):
         shutil.rmtree(output_directory)
     os.makedirs(output_directory)
     
-    for i in range(aug.__len__()):
+
+    # for i in range(aug.__len__()):
+    for i in range(2):
         output_path = f"{output_directory}/{i + 1}.png"
         aug.plot(i, save_to=output_path)
+        output_path = f"{output_directory}/{i + 1}s.png"
+        aug_striped.plot(i, save_to=output_path)
     print(f"Saved augmented dataset to {output_directory}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate and save augmented images from a hypercube.")
