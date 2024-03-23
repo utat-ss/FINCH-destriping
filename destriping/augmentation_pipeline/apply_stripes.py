@@ -1,3 +1,4 @@
+
 """apply_stripes.py.
 
 Contains functions to add stripes to any data set that have absolutely
@@ -5,33 +6,54 @@ no stripes
 
 Author(s): Amreen Imrit, John Ma, Hector Chen
 
+Usage: striped_datacube = add_stripes(datacube, configs)
+
+Configs:
+snp_noise: bool, true to add salt and pepper noise to hypercube
+gaussian_noise: bool, true to add gaussian 'static' noise to hypercube
+clusters: bool, true to add stripe clustering
+fragmented: bool, true to have stripes fragmented along length
+by_layers: bool, true to fragment each spectrum seperately
+stripe_frequency: float, frequency of striping
+stripe_intensity: float, intensity of striping
+salt: float, the probability of salt noise (white pixels) in the image
+pepper: float, the probability of pepper noise (black pixels) in the image
+max_clusters: int, maximum amount of clusters
+bit: int, the bit that the image is in defaulted at 16
+
 """
 
-# stdlib
 import copy
-
-# external
 import numpy as np
+
+
+def add_stripes(datacube, configs=None):
+    """
+        main function to call
+        returns striped datacube based on configs.
+    """
+
+    striped_data = copy.deepcopy(
+        datacube
+    )
+    # sets default values if some configs values do not exist
+    configs = _check_configs(configs)
+
+    # depending on the stripe types
+    striped_data = _gaussian_stripe(striped_data ,configs)
+
+    # add noise to the frame
+    if configs['gaussian_noise']:
+        striped_data = _add_gaussian_noise(striped_data, configs['bit'])
+    if configs['snp_noise']:
+        striped_data = _add_snp_noise(striped_data, configs['salt'], configs['pepper'])
+
+    return striped_data
 
 
 def _check_configs(configs):
     '''
-        checks configs to see if there any empty ones, if so
-        fills them with these default values
-
-        
-        snp_noise: bool, true to add salt and pepper noise to the hypercube
-        gaussian_noise: bool, true to add gaussian noise to the hypercube
-        clusters: bool,  true to turn on clusters of stripes
-        fragmented: bool, true to fragment the stripes along the column
-        by_layers: bool,  true to make each band/layer fragmented differently
-        stripe_frequency: float, controls the frequency of the lines
-        stripe_intensity: float, controls the intensity of the noise on the lines
-        salt: float, the probability of salt noise in the image
-        pepper: float, the probability of pepper of pepper noise in the image
-        max_clusters: int, the maximum amount of clusters defaulted at 10
-        bit: int, the bit that the image is in defaulted at 16
-
+        sets configs to default values if not yet initialized
     '''
     # Define default values
     default_values = {
@@ -42,7 +64,6 @@ def _check_configs(configs):
         'by_layers': True,
         'stripe_frequency': 0.5,
         'stripe_intensity': -1, 
-
         'salt':-1, 
         'pepper':-1, 
         'max_clusters': 10,
@@ -50,21 +71,22 @@ def _check_configs(configs):
     }
     if configs is None:
         return default_values
-    # Update configs with default values for missing keys
     for key, default_value in default_values.items():
         configs[key] = configs.get(key, default_value)
     return configs
 
+
 def _gaussian_stripe(data, configs):
-    # Reference: https://www.mdpi.com/2072-4292/6/11/11082, Section 2.1
-    # Direction: invariant per scene or within a short time span (Parallel to direction of motion)
-        # Noise is additive
-    # Magnitude: Sensor independent White Gaussian Noise (0 mean and specific standard deviations)
-        # Dark current varies Gaussianly
-        # 0 Mean, 1 Standard Deviation. Rescaled later
-        # four different striping scenarios, scales are standard deviations of 0.1%, 0.5%, 1% and 5% of individual band's range
-        # pick a random length
-    dims = data.shape
+    '''
+        adds solid striped noise of gaussian-varied magnitude to hypercube.
+
+        Reference: https://www.mdpi.com/2072-4292/6/11/11082, Section 2.1
+            Noise is additive
+            Magnitude: Sensor independent White Gaussian Noise
+            0 Mean, 1 Standard Deviation. Rescaled later
+            stripe intensity ranges from 0.1%-5% of individual spectrum's range
+    '''
+    # Setting stripe intensity
     stripe_intensity = configs['stripe_intensity'] # [0, 1)
     if stripe_intensity < 0:
         stripe_intensity = np.random.uniform(0.01, 0.3,1)
@@ -74,23 +96,27 @@ def _gaussian_stripe(data, configs):
         stripe_intensity = np.random.uniform(stripe_intensity, stripe_intensity + 0.1,1)
 
 
-    # select new columns for each band
+    # Selecting columns to be striped
+    dims = data.shape
     col_lines = _select_lines(dims, configs)
 
     for i in range(data.shape[2]):
-        if configs['by_layers']:
-            col_lines = _select_lines(dims, configs) #all cols that will have a stripe
 
+        if configs['by_layers']:
+            # Individual spectra are striped seperately
+            col_lines = _select_lines(dims, configs)
+
+        # Getting mean and standard deviation
         max_value= np.max(data[:,:,i])
         min_value = np.min(data[:,:,i])
         range_value= max_value - min_value
         mean=0
         std_dev=stripe_intensity*range_value
 
-        # all the col lines to add noise to
-        # noise=np.round(np.random.uniform(mean, std_dev, len(col_lines))).astype('<u2')
+        # Creating a stripe intensity array corresponding to each stripe
         noise =np.round(abs(np.random.normal(mean, std_dev, len(col_lines)))).astype('<u2')
-        # choose lengths and fragments
+
+        # adding noise to data
         if configs['fragmented']:
             # fragments each column
             data = _choose_slices(data, i ,col_lines ,noise)
@@ -164,13 +190,7 @@ def _choose_slices(data, i, col_lines, noise):
 
 def _add_snp_noise(cube, salt_prob, pepper_prob):
     """
-    args:
-    cube: the datacube
-    std: the standard deviation of the noise
-    mean: the standard mean of the amount that the stripe covers vertically 
-    bit: the number of bits the image has
-
-    returns:
+    adds salt and pepper noise to hypercube
     """
     if salt_prob < 0:
         salt_prob = np.random.uniform(0, 0.1, 1 )
@@ -189,18 +209,8 @@ def _add_snp_noise(cube, salt_prob, pepper_prob):
 
 def _add_gaussian_noise(cube,bit, mean_percent = 0.05, std_percent=0.1 ):
     """
-    args:
-    cube: the datacube
-    std: the standard deviation of the noise
-    mean: the standard mean of the amount that the stripe covers vertically 
-    bit: the number of bits the image has
-
-    returns:
+    adds gaussian 'static' noise to hypercube
     """
-    #max
-    # _, col, _ = cube.shape
-    # gauss = np.random.normal(mean_percent*col, std_percent*col, cube.shape)
-
     # scales noise by maximum values in each spectrum
     maximums = np.amax(cube, axis=(0, 1))
     gauss = np.random.normal(mean_percent, std_percent, cube.shape)
@@ -214,27 +224,14 @@ def _add_gaussian_noise(cube,bit, mean_percent = 0.05, std_percent=0.1 ):
 
 def _select_lines(dims, configs):
     """
-    Helper function, 
-    Selects lines to add noise to
-    args:
-    dims: tuple of the data cube.
-    clusters: boolean
-    r: ratio of columns to select
-    max_clusters: int
-
-
-
-    returns:
-    List of int, representing the lines to return
+    helper function that returns a int list of lines to be striped in gaussian striping.
+    responsible for clustering stripes
     """
-
 
     cols_striped = set()
     max_clusters = configs['max_clusters']
     clusters = configs['clusters']
     stripe_frequency = configs['stripe_frequency']
-
-
 
     # if there are clusters we would want to find areas to cluster these values
     # number of clusters are usual uniform, in addition to the number of stripes
@@ -280,35 +277,3 @@ def _select_lines(dims, configs):
     # print(cols_striped)
     return cols_striped
 
-
-def add_stripes(datacube, configs=None):
-    """
-    Adds stripes to the data cube depending on the parameters
-
-    Args:
-    datacube: np array
-    configs: dictionary
-    
-    Returns:
-    striped_data: data cube with stripes added to it
-    """
-
-    striped_data = copy.deepcopy(
-        datacube
-    )
-    # sets default values if some configs values do not exist
-    configs = _check_configs(configs)
-
-    # depending on the stripe types
-    striped_data = _gaussian_stripe(striped_data ,configs)
-
-
-
-    # add noise to the frame
-    if configs['gaussian_noise']:
-        striped_data = _add_gaussian_noise(striped_data, configs['bit'])
-    if configs['snp_noise']:
-        striped_data = _add_snp_noise(striped_data, configs['salt'], configs['pepper'])
-
-
-    return striped_data
