@@ -2,7 +2,7 @@
 
 Contains functions (PSNR, SSIM, LPIPS) to calculate processed images.
 
-Author(s): Isha
+Author(s): Isha Ruparelia
 """
 
 import torch
