@@ -1,3 +1,10 @@
+"""image_quality_metrics.py
+
+Contains functions (PSNR, SSIM, LPIPS) to calculate processed images.
+
+Author(s): Isha
+"""
+
 import torch
 import torchvision.transforms as transforms
 import numpy as np
