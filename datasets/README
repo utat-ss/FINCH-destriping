@@ -4,7 +4,7 @@ We're going to change the way we interract with datasets for this repository. Si
 
 To use a dataset, please do the following:
 1. Load this repository on your desktop environment as usual.
-2. Download as many datacube files as you want from here: 
+2. Download as many datacube files as you want from here: https://drive.google.com/drive/u/0/folders/1wpPWqD3VWxYPROrLeBd3RuXjccrb6sKF
 3. Put these files in the "datasets" folder on your device so that you can access them as normal.
 4. When you push your local branch, it won't upload the datacube files - so if you make any changes, you will need to upload those changed datacube files to the Google Drive folder from earlier.
 
