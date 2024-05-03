@@ -10,3 +10,5 @@ scrap.txt
 temp-plot.html
 tmp
 .ipynb_checkpoints
+.mat
+.npy
