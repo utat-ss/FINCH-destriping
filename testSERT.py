@@ -85,7 +85,7 @@ def add_basic_stripes(data_cube, num_stripes=0):
 
 
 def numpy_dataset():
-    filelist = glob.glob('/Users/prithviseran/Documents/UTAT/SERT/Numpy-data/.npy-files/*.npy')
+    filelist = glob.glob('./Numpy-data/.npy-files/*.npy')
 
     images = []
 
