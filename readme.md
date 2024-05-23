@@ -11,6 +11,15 @@ Miaoyu Li, Ji Liu, [Ying Fu](https://ying-fu.github.io/), [Yulun Zhang](http://y
 of extracting global underlying low-rank property of spatial-spectral cubes to suppress noise, while enabling the interactions among non-overlapping spatial rectangles. Extensive experiments have been conducted on both synthetic noisy HSIs and real noisy HSIs, showing the effectiveness of our proposed method in terms of both objective metric and subjective visual quality.
 <hr />
 
+## ----------- FOR DESTRIPING ---------------
+- Download the numpy dataset from the google drive
+- Name the folder Numpy-data
+- use this command to run the code
+  ```
+  python testSERT.py -a sert_base -p sert_base_complex_test -r -rp checkpoints/icvl_complex.pth --test-dir  /icvl_noise/512_mix
+  ```
+
+
 ## Network Architecture
 
 <img src = "figs/overall.png"> 
