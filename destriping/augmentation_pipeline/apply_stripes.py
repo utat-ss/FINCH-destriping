@@ -42,7 +42,6 @@ def _check_configs(configs):
         'by_layers': True,
         'stripe_frequency': 0.5,
         'stripe_intensity': -1, 
-
         'salt':-1, 
         'pepper':-1, 
         'max_clusters': 10,
@@ -71,7 +70,7 @@ def _gaussian_stripe(data, configs):
     else:
         # making sure each stripe has some variation to it in terms of intensity
         stripe_intensity = max(0, stripe_intensity - 0.05)
-        stripe_intensity = np.random.uniform(stripe_intensity, stripe_intensity + 0.1,1)
+        stripe_intensity = np.random.uniform(stripe_intensity, stripe_intensity + 0.1,data.shape[1])
 
 
     # select new columns for each band
@@ -83,15 +82,16 @@ def _gaussian_stripe(data, configs):
         if configs['by_layers']:
             col_lines = _select_lines(dims, configs) #all cols that will have a stripe
 
-        max_value= np.max(data[:,:,i])
-        min_value = np.min(data[:,:,i])
-        range_value= max_value - min_value
+        # max_value= np.max(data[:,:,i])
+        # min_value = np.min(data[:,:,i])
+        # range_value= max_value - min_value
         mean=0
-        std_dev=stripe_intensity*range_value
+        # std_dev=stripe_intensity*range_value
+        std_dev=stripe_intensity*data[:,col_lines,i]
 
 
         # all the col lines to add noise to
-        noise=np.round(np.random.uniform(mean, std_dev, len(col_lines))).astype('<u2')
+        noise=np.round(np.random.normal(mean, std_dev, len(col_lines))).astype('<u2')
         
 
         # choose lengths and fragments
