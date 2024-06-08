@@ -157,9 +157,7 @@ def _choose_slices(data, i, col_lines, noise):
                 end = start + 1
             data[start:end, col, i] += noise[j]
 
-            # temp = data[start:end, col, i] # for debugging purpoess
-            # temp = temp + noise[j]
-            # data[start:end, col, i] = temp # for debugging purposes
+
 
     
     return data
@@ -220,17 +218,16 @@ def _select_lines(dims, configs):
     max_clusters: int
 
 
-
     returns:
     List of int, representing the lines to return
     """
 
+    # select 0 lines if we do not want to select this band to add noise 
 
     cols_striped = set()
     max_clusters = configs['max_clusters']
     clusters = configs['clusters']
     stripe_frequency = configs['stripe_frequency']
-
 
 
     # if there are clusters we would want to find areas to cluster these values
