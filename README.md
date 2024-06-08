@@ -3,7 +3,7 @@
 # Destriping - A Data Processing Project
  The destriping project is a step under level 1B radiometric correction of the FINCH Data Processing Pipeline. It's goal is to remove stripe streak from our pushbroom imager data
 
- This repo contains all the code we created and adapted from different sources. 
+ This repo contains all the code we created and adapted from different sources.
 
  ## Folders & Files (high level):
 1. **.gitignore** - tells git which files to ignore when committing the project
