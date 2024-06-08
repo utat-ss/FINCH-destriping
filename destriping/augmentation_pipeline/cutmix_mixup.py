@@ -1,4 +1,7 @@
+# stdlib
 import random
+
+# external
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 

@@ -48,7 +48,7 @@ def snrCal(Xref, X):
 
 
 def PSNR(img1, img2):
-    """"Calculating peak signal-to-noise ratio (PSNR) between two images."""
+    """ "Calculating peak signal-to-noise ratio (PSNR) between two images."""
     max_value = np.max(img1)
     mse = np.mean(
         (np.array(img1, dtype=np.float32) - np.array(img2, dtype=np.float32)) ** 2

@@ -18,7 +18,6 @@ import scipy.io
 import skimage
 import tensorflow as tf
 from Indexes import ergas, sam
-
 from skimage.measure import compare_psnr, compare_ssim
 
 # import cv2

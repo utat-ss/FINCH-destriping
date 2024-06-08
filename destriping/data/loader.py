@@ -1,13 +1,15 @@
-from torch.utils.data.dataset import Dataset
+# stdlib
+import sys
+
+# external
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io
 import torch
 from spectral import imshow, save_rgb
-import matplotlib.pyplot as plt
-import sys
+from torch.utils.data.dataset import Dataset
 
-sys.path.append("..")
-from augmentation_pipeline.cutmix_mixup import generate_augmented_images
+from ..augmentation_pipeline.cutmix_mixup import generate_augmented_images
 
 
 class AugmentedDataset(Dataset):
@@ -15,15 +17,17 @@ class AugmentedDataset(Dataset):
         self, dataset, alpha=0.5, size=16, mixup_images=None, cutmix_images=None
     ):
         augmented_images_cutmix = generate_augmented_images(
-            dataset, num_samples=cutmix_images, augmentation_type="cutmix", size = size
+            dataset, num_samples=cutmix_images, augmentation_type="cutmix", size=size
         )
         augmented_images_mixup = generate_augmented_images(
-            dataset, num_samples=mixup_images, augmentation_type="mixup", alpha = alpha
+            dataset, num_samples=mixup_images, augmentation_type="mixup", alpha=alpha
         )
         original_images = [dataset[i] for i in range(dataset.__len__())]
         stacked_tensor = torch.stack(
             # augmented_images_cutmix + augmented_images_mixup
-            original_images + augmented_images_cutmix + augmented_images_mixup
+            original_images
+            + augmented_images_cutmix
+            + augmented_images_mixup
         )
         self.images = stacked_tensor
         self.cube = self.images.numpy()
@@ -51,7 +55,7 @@ class HyperSpectralCube(Dataset):
         data = np.moveaxis(data, -1, 0)
         self.images = torch.from_numpy(data)
         self.bands = len(self.images)
-        
+
     def __getcube__(self):
         return self.images
 
@@ -62,7 +66,7 @@ class HyperSpectralCube(Dataset):
     def __len__(self):
         return self.bands
 
-    def plot(self, band, save_to = None, show = False):
+    def plot(self, band, save_to=None, show=False):
         imshow(self.cube, [band])
         if save_to:
             save_rgb(save_to, self.cube, [band])

@@ -1,6 +1,7 @@
 """
 Author: [@Rishit-Dagli](https://github.com/Rishit-dagli)
 """
+
 """
 _CutMix_ is a data augmentation technique that addresses the issue of information loss
 and inefficiency present in regional dropout strategies.
