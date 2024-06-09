@@ -42,6 +42,7 @@ def _check_configs(configs):
         'by_layers': True,
         'stripe_frequency': 0.5,
         'stripe_intensity': -1, 
+
         'salt':-1, 
         'pepper':-1, 
         'max_clusters': 10,
@@ -64,19 +65,19 @@ def _gaussian_stripe(data, configs):
         # four different striping scenarios, scales are standard deviations of 0.1%, 0.5%, 1% and 5% of individual band's range
         # pick a random length
     dims = data.shape
+
+
+
+    # select new columns for each band
+    if configs['by_layers']:
+        col_lines = _select_lines(dims, configs)
     stripe_intensity = configs['stripe_intensity'] # [0, 1)
     if stripe_intensity < 0:
         stripe_intensity = np.random.uniform(0.01, 0.3,1)
     else:
         # making sure each stripe has some variation to it in terms of intensity
         stripe_intensity = max(0, stripe_intensity - 0.05)
-        stripe_intensity = np.random.uniform(stripe_intensity, stripe_intensity + 0.1,data.shape[1])
-
-
-    # select new columns for each band
-    if configs['by_layers']:
-        col_lines = _select_lines(dims, configs)
-
+        stripe_intensity = np.random.uniform(stripe_intensity, stripe_intensity + 0.1,1)
 
     for i in range(data.shape[2]):
         if configs['by_layers']:
@@ -88,15 +89,17 @@ def _gaussian_stripe(data, configs):
         mean=0
         # std_dev=stripe_intensity*range_value
         std_dev=stripe_intensity*data[:,col_lines,i]
-
+        #print(std_dev.shape)
+        #print(col_lines.shape)
 
         # all the col lines to add noise to
-        noise=np.round(np.random.normal(mean, std_dev, len(col_lines))).astype('<u2')
-        
 
+        noise=np.round(np.random.uniform(mean, std_dev, std_dev.shape)).astype('<u2')
+        
         # choose lengths and fragments
         if configs['fragmented']:
             # fragments each column
+            # print('noise: ', noise.shape)
             data = _choose_slices(data, i ,col_lines ,noise)
         else:
             data[:, col_lines, i] += noise
@@ -148,16 +151,19 @@ def _choose_slices(data, i, col_lines, noise):
         for frag in frags:
             start = fragment_starts[frag]
 
-            # odd that this is an array but ok
-
             # if at capped size, then add nothing
             if frag < fragment_sizes.shape[0]:
                 end = start + fragment_sizes[frag]
             else:
                 end = start + 1
-            data[start:end, col, i] += noise[j]
 
+            #print('data: ' ,data[start:end, col, i].shape , 'noise: ' , noise[start:end, j].shape)
+            
+            data[start:end, col, i] += noise[start:end, j]
 
+            # temp = data[start:end, col, i] # for debugging purpoess
+            # temp = temp + noise[j]
+            # data[start:end, col, i] = temp # for debugging purposes
 
     
     return data
@@ -218,16 +224,17 @@ def _select_lines(dims, configs):
     max_clusters: int
 
 
+
     returns:
     List of int, representing the lines to return
     """
 
-    # select 0 lines if we do not want to select this band to add noise 
 
     cols_striped = set()
     max_clusters = configs['max_clusters']
     clusters = configs['clusters']
     stripe_frequency = configs['stripe_frequency']
+
 
 
     # if there are clusters we would want to find areas to cluster these values
