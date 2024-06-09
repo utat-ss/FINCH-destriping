@@ -81,7 +81,7 @@ def _gaussian_stripe(data, configs):
 
     for i in range(data.shape[2]):
         if configs['band_chance'] and (np.random.uniform(0,1) > 0.2):
-            pass
+            continue
         if configs['by_layers']:
             col_lines = _select_lines(dims, configs) #all cols that will have a stripe
 
