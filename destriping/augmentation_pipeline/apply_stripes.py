@@ -42,7 +42,7 @@ def _check_configs(configs):
         'by_layers': True,
         'stripe_frequency': 0.5,
         'stripe_intensity': -1, 
-
+        'band_chance' : True,
         'salt':-1, 
         'pepper':-1, 
         'max_clusters': 10,
@@ -80,22 +80,24 @@ def _gaussian_stripe(data, configs):
         stripe_intensity = np.random.uniform(stripe_intensity, stripe_intensity + 0.1,1)
 
     for i in range(data.shape[2]):
+        if configs['band_chance'] and (np.random.uniform(0,1) > 0.2):
+            pass
         if configs['by_layers']:
             col_lines = _select_lines(dims, configs) #all cols that will have a stripe
 
-        # max_value= np.max(data[:,:,i])
-        # min_value = np.min(data[:,:,i])
-        # range_value= max_value - min_value
+        max_value= np.max(data[:,:,i])
+        min_value = np.min(data[:,:,i])
+        range_value= (max_value - min_value)
         mean=0
-        # std_dev=stripe_intensity*range_value
-        std_dev=stripe_intensity*data[:,col_lines,i]
+        std_dev= np.abs(stripe_intensity*range_value)
+        # std_dev=stripe_intensity*data[:,col_lines,i]
         #print(std_dev.shape)
         #print(col_lines.shape)
 
         # all the col lines to add noise to
 
-        noise=np.round(np.random.uniform(mean, std_dev, std_dev.shape)).astype('<u2')
-        
+        # noise=np.round(np.random.uniform(mean, std_dev, std_dev.shape)).astype('<u2')
+        noise=np.round(np.random.uniform(mean, std_dev, len(col_lines))).astype('<u2')
         # choose lengths and fragments
         if configs['fragmented']:
             # fragments each column
@@ -159,8 +161,8 @@ def _choose_slices(data, i, col_lines, noise):
 
             #print('data: ' ,data[start:end, col, i].shape , 'noise: ' , noise[start:end, j].shape)
             
-            data[start:end, col, i] += noise[start:end, j]
-
+            # data[start:end, col, i] += noise[start:end, j]
+            data[start:end, col, i] += noise[j]
             # temp = data[start:end, col, i] # for debugging purpoess
             # temp = temp + noise[j]
             # data[start:end, col, i] = temp # for debugging purposes
