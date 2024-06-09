@@ -85,19 +85,24 @@ def _gaussian_stripe(data, configs):
         if configs['by_layers']:
             col_lines = _select_lines(dims, configs) #all cols that will have a stripe
 
-        max_value= np.max(data[:,:,i])
-        min_value = np.min(data[:,:,i])
-        range_value= (max_value - min_value)
-        mean=0
-        std_dev= np.abs(stripe_intensity*range_value)
-        # std_dev=stripe_intensity*data[:,col_lines,i]
-        #print(std_dev.shape)
-        #print(col_lines.shape)
+
 
         # all the col lines to add noise to
 
+        # Getting mean and standard deviation
+        max_value = np.max(data[:, :, i])
+        min_value = np.min(data[:, :, i])
+        range_value = np.float64(max_value) - np.float64(min_value)  # Casting to avoid overflow
+        mean = 0
+        std_dev = np.abs(stripe_intensity * range_value)  # Ensure non-negative
+        # std_dev=stripe_intensity*data[:,col_lines,i]
+        #print(std_dev.shape)
+        #print(col_lines.shape)
+        
+        # Creating a stripe intensity array corresponding to each stripe
         # noise=np.round(np.random.uniform(mean, std_dev, std_dev.shape)).astype('<u2')
-        noise=np.round(np.random.uniform(mean, std_dev, len(col_lines))).astype('<u2')
+
+        noise = np.round(np.abs(np.random.normal(mean, std_dev, len(col_lines)))).astype('<u2')
         # choose lengths and fragments
         if configs['fragmented']:
             # fragments each column
